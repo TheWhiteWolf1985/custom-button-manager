@@ -1,0 +1,118 @@
+{
+  "name": "custom-command-sidebar",
+  "displayName": "Custom command sidebar",
+  "description": "Add buttons to run different custom commands or routines",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.107.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:myCommandSidebar.view",
+    "onCommand:myCommandSidebar.addButton"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "custom-command-sidebar.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "myCommandSidebar.addButton",
+        "title": "Commands: Add Button"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "myCommandSidebar",
+          "title": "Commands",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "myCommandSidebar": [
+        {
+          "type": "webview",
+          "id": "myCommandSidebar.view",
+          "name": "Commands",
+          "contextualTitle": "Commands"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Command Sidebar",
+      "properties": {
+        "myCommandSidebar.categories": {
+          "type": "array",
+          "description": "Categorie della sidebar Commands, ciascuna con la propria lista di pulsanti.",
+          "default": [
+            { "id": "favorites", "label": "Preferiti", "buttons": [] },
+            { "id": "workspace", "label": "Workspace", "buttons": [] },
+            { "id": "github", "label": "Github", "buttons": [] }
+          ],
+          "items": {
+            "type": "object",
+            "required": [ "id", "label", "buttons" ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Identificatore stabile della categoria."
+              },
+              "label": {
+                "type": "string",
+                "description": "Etichetta mostrata nell'intestazione della categoria."
+              },
+              "buttons": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [ "label", "command" ],
+                  "properties": {
+                    "label": { "type": "string", "description": "Testo mostrato sul pulsante." },
+                    "command": { "type": "string", "description": "Command identifier da eseguire." },
+                    "icon": { "type": "string", "description": "Nome Codicon (senza prefisso codicon-)." },
+                    "args": {
+                      "description": "Argomenti passati al comando (qualsiasi JSON).",
+                      "type": [ "array", "object", "string", "number", "boolean", "null" ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.107.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "typescript-eslint": "^8.48.1",
+    "eslint": "^9.39.1",
+    "esbuild": "^0.27.1",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.9.3",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
