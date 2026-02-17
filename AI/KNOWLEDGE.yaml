@@ -58,6 +58,12 @@ entities:
     path: "src/test/extension.test.ts"
     notes: "Suite base di esempio, copertura funzionale limitata."
 
+  - id: "doc.readme"
+    type: "Documentation"
+    name: "README setup ambiente"
+    path: "README.md"
+    notes: "Guida in italiano per setup, build, test, debug e configurazione categories."
+
 relations:
   - from: "ext.custom-command-sidebar"
     type: "activates_on"
@@ -86,6 +92,14 @@ relations:
   - from: "debug.launch.runExtension"
     type: "runs"
     to: "ext.custom-command-sidebar"
+
+  - from: "doc.readme"
+    type: "documents"
+    to: "ext.custom-command-sidebar"
+
+  - from: "doc.readme"
+    type: "documents"
+    to: "config.myCommandSidebar.categories"
 
 changes_log:
   - step_id: "STEP 001"
@@ -140,4 +154,34 @@ changes_log:
     notes: "Nessun placeholder obbligatorio residuo in `AI/`."
     risks:
       - "Le checklist smoke/release sono compilabili ma non ancora eseguite come checklist formali file-per-file."
+
+  - step_id: "STEP 004"
+    summary: "README principale riscritto in italiano con istruzioni operative di setup ambiente e configurazione estensione."
+    commit: ""
+    files:
+      - "README.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "Get-Content -Raw README.md"
+      - "Get-Content -Raw package.json"
+      - "Get-Content -Raw src/extension.ts"
+      - "npm run compile"
+      - "npm test"
+    notes: "`npm run compile` completato con successo; `npm test` fallisce in ambiente Windows per invocazione non valida di `Code.exe` da `.vscode-test` (errore quoting path con spazi)."
+    risks:
+      - "Finche' il quoting del path VS Code test host non e' risolto, i test automatici non sono eseguibili in questa workstation."
+      - "Il README dipende dalla validita' futura degli script npm; aggiornare la sezione comandi se cambiano in `package.json`."
+
+  - step_id: "STEP 001 (2026-02-17)"
+    summary: "Preflight AI completato: lettura standard `AI/README.md` e verifica presenza file standard in `AI/`."
+    commit: ""
+    files:
+      - "AI/README.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "Get-ChildItem AI -Recurse -Force | Select-Object FullName,Length"
+      - "Get-Content -Raw AI/README.md"
+    notes: "Tutti i file chiave richiesti dallo step risultano presenti; nessuna creazione di file/cartelle."
+    risks: []
 
