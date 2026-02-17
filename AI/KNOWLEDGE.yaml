@@ -416,3 +416,17 @@ changes_log:
     risks:
       - "Manca ancora smoke manuale visivo su flicker in Extension Development Host."
 
+  - step_id: "STEP 005 (TASKS V2 - 2026-02-17)"
+    summary: "Grid pulsanti resa responsiva rispetto alla larghezza sidebar."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+    notes: "CSS webview aggiornato con `repeat(auto-fill, minmax(96px, 1fr))` senza cambiare logica runtime."
+    risks:
+      - "Verifica visuale resize sidebar ancora da eseguire manualmente in smoke."
+

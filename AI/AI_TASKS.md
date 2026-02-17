@@ -115,7 +115,7 @@ Regole:
 ---
 
 ### STEP 005 - Grid responsiva: adattarsi alla larghezza reale della sidebar
-- Status: TODO
+- Status: DONE
 - Goal: Rendere la griglia dei pulsanti adattiva (niente 3 colonne fisse).
 - Scope: `src/extension.ts` (CSS webview).
 - Changes:
@@ -131,6 +131,8 @@ Regole:
   - `feat(ui): make button grid responsive to sidebar width`
 - Blockers/Notes:
   - Audit: grid a 3 colonne fisse non si adatta.
+- What changed:
+  - Aggiornata la regola CSS `.grid` in `src/extension.ts` da 3 colonne fisse a `repeat(auto-fill, minmax(96px, 1fr))`.
 
 ---
 
