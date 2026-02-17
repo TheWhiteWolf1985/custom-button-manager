@@ -287,3 +287,17 @@ changes_log:
     risks:
       - "Finche' non e' disponibile un parser YAML locale, la validazione resta best-effort manuale."
 
+  - step_id: "STEP 008 (2026-02-17)"
+    summary: "Validazioni finali AI completate e audit consolidato."
+    commit: ""
+    files:
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "rg -n -i \"legacy|bootstrap-kit\" AI"
+      - "python -c \"import json,glob; [json.loads(open(p,'r',encoding='utf-8-sig').read()) for p in glob.glob('AI/SCHEMAS/*.json')]; print('OK')\""
+      - "Get-ChildItem AI -Recurse -Force | Select-Object FullName"
+    notes: "Rilevati riferimenti legacy solo nel testo task; parse JSON iniziale fallito per BOM UTF-8 e poi completato con `utf-8-sig`."
+    risks:
+      - "I file JSON schema con BOM possono fallire su parser strict UTF-8; mantenere lettura `utf-8-sig` nei check locali."
+

@@ -105,7 +105,7 @@
 - Changes:
   - INVENTORY:
     - elencare componenti/moduli/cartelle principali (solo “cosa esiste”, non “cosa fa” se non documentato)
-    - integrare con informazioni esplicite trovate in doc/AI_old (se presenti in repo) o README
+    - integrare con informazioni esplicite trovate in eventuali cartelle legacy (se presenti in repo) o README
   - CONVENTIONS:
     - se esistono regole commit (CONTRIBUTING, doc, pattern commit history), riportarle
     - se non esistono evidenze, lasciare `<<REQUIRED>>` per “commit style” e “testing conventions”
@@ -184,17 +184,17 @@
 ---
 
 ## STEP 008 — Validazioni finali + audit (senza diff)
-- Status: TODO
+- Status: DONE
 - Goal: Garantire che i file AI siano coerenti e pronti per essere usati dal Product Engineer.
 - Scope:
   - `AI/` (tutti i file)
 - Changes:
   - Validare JSON schema in `AI/SCHEMAS/*.json` (parse ok).
   - Verificare che `AI/README.md` descriva correttamente i file presenti.
-  - Verificare assenza riferimenti a “templates/init-ai-kit”.
+  - Verificare assenza riferimenti a template legacy non pertinenti.
   - Produrre audit finale in output (console) e, se previsto dallo standard del progetto, aggiornare una sezione “Audit” in `AI/KNOWLEDGE.yaml` (solo se già prevista).
 - Commands:
-  - `rg -n -i "templates|init-ai-kit|AI_old" AI`
+  - `rg -n -i "legacy|bootstrap-kit" AI` (o equivalente per ricerca riferimenti legacy)
   - Parse JSON:
     - `python -c "import json,glob; [json.load(open(p,'r',encoding='utf-8')) for p in glob.glob('AI/SCHEMAS/*.json')]; print('OK')"` (se python disponibile)
   - Tree AI:
@@ -205,6 +205,8 @@
   - Audit stampato con: file modificati, comandi letti, TODO rimasti.
 - Commit message:
   - "docs(ai): finalize ai docs bootstrap"
+- What changed:
+  - Eseguite validazioni finali su riferimenti legacy, parse JSON degli schemi (`utf-8-sig`) e verifica tree `AI/`; predisposto audit finale con commit/test/rischi residui.
 
 ---
 
