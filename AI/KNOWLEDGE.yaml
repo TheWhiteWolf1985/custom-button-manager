@@ -548,3 +548,17 @@ changes_log:
     risks:
       - "Cleanup best-effort: in caso di kill brutale processo, directory temp potrebbero restare in `%TEMP%`."
 
+  - step_id: "STEP 011 (TASKS V3 - 2026-02-17)"
+    summary: "Aggiunta smoke checklist rapida post-hardening con evidenza prima esecuzione."
+    commit: ""
+    files:
+      - "AI/CHECKLISTS/SMOKE.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+    notes: "Checklist 3 minuti resa esplicita sui flussi critici webview e sul controllo regressione mutex warning nei test."
+    risks:
+      - "Le verifiche manuali UI richiedono ancora passaggio in Extension Development Host e non sono validabili integralmente da CLI."
+

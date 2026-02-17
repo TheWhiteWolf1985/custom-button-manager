@@ -67,7 +67,7 @@ Regole:
 ---
 
 ## STEP 011 - Smoke check rapido post-hardening (3 minuti)
-- Status: TODO
+- Status: DONE
 - Goal: ridurre regressioni da runner test + ottimizzazioni webview.
 - Scope:
   - `AI/CHECKLISTS/SMOKE.md`
@@ -86,3 +86,5 @@ Regole:
   - Eseguita almeno 1 volta dopo STEP 009/010.
 - Commit message:
   - `docs(smoke): add quick regression checklist for webview and tests`
+- What changed:
+  - Aggiornata `AI/CHECKLISTS/SMOKE.md` con checklist rapida 3 minuti (sidebar render, add/edit/delete no flicker, execute args array/object/none, `npm test` senza mutex warning) e registrata una prima esecuzione post STEP 009/010.
