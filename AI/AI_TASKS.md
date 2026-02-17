@@ -1,210 +1,86 @@
-﻿# AI_TASKS - custom-command-sidebar (VSCode-custom-button)
+﻿# AI_TASKS - nuovi step post-audit
 
-Fonte principale: audit tecnico 2026-02-17.  
-Obiettivo: rendere il progetto più robusto e “production-ready” senza refactor gratuiti.
-
+Obiettivo: chiudere gli ultimi punti emersi dall’audit (mutex warning + gestione cache test) e consolidare con smoke check rapido.
 Regole:
-- Cambi piccoli, verificabili, e con commit Conventional Commits.
-- No nuove dipendenze senza necessità esplicita (se servono, motivarle nello step).
-- Ogni step aggiorna `AI/KNOWLEDGE.yaml` e, se serve, `AI/DECISIONS.md`.
+- Conventional Commits
+- Cambi minimi e verificabili
+- Aggiornare `AI/KNOWLEDGE.yaml` a fine step; usare `AI/DECISIONS.md` solo se serve motivare scelte (es. tempdir vs repo)
 
 ---
 
-### STEP 001 - Riproduzione baseline e messa in chiaro dei comandi
+## STEP 009 - Elimina warning "Error mutex already exists" isolando il profilo del Test Host
 - Status: DONE
-- Goal: Rendere ripetibile lo stato attuale e fissare i comandi reali di build/test.
-- Scope: `package.json`, `.vscode-test.mjs` (solo lettura/annotazioni se serve), `AI/AI_RUNBOOK.md` (se già presente), `AI/KNOWLEDGE.yaml`.
+- Goal: far girare `npm test` senza warning di mutex / collisioni con istanze VS Code già aperte.
+- Scope:
+  - `scripts/run-vscode-tests.mjs` (o runner equivalente)
+  - `AI/AI_RUNBOOK.md` (nota troubleshooting, se presente)
+  - `AI/KNOWLEDGE.yaml` (+ `AI/DECISIONS.md` se decisioni)
 - Changes:
-  - Verificare e documentare i comandi reali: install, compile, lint, test.
-  - Annotare il failure attuale di `npm test` su Windows (path con spazi / Code.exe non risolto).
-  - Aggiornare RUNBOOK con troubleshooting minimo per test (senza ancora fixare).
-- Commands:
-  - `npm install`
-  - `npm run compile`
-  - `npm run lint` (se presente)
-  - `npm test` (atteso KO su Windows al momento)
-- Acceptance criteria:
-  - RUNBOOK/KNOWLEDGE aggiornati con comandi e risultato baseline (OK/KO) riproducibile.
-  - Nessuna modifica funzionale al runtime dell’estensione.
-- Commit message:
-  - `chore(ai): record baseline build and test status`
-- Blockers/Notes:
-  - Il test runner oggi fallisce su Windows con path contenenti spazi (audit).
-- What changed:
-  - Aggiornato `AI/AI_RUNBOOK.md` con baseline riproducibile comandi (install/compile/lint/test) e dettaglio errore attuale su `npm test` in Windows.
-
----
-
-### STEP 002 - Fix test runner: `npm test` deve funzionare su Windows (path con spazi)
-- Status: DONE
-- Goal: Rendere eseguibile `npm test` in ambiente Windows anche con workspace path contenenti spazi.
-- Scope: `.vscode-test.mjs`, `package.json` (script test), eventuale utilità locale in `scripts/` se necessaria.
-- Changes:
-  - Sistemare la risoluzione dell’executable VS Code usato dai test (`Code.exe`) evitando problemi di quoting/spazi.
-  - Preferire approccio compatibile con `@vscode/test-electron`:
-    - usare path assoluto corretto,
-    - evitare concatenazioni “a stringa” non quotate,
-    - se serve: fallback via env var (`VSCODE_EXECUTABLE_PATH`) documentata.
-  - Rendere il fallimento “parlante” (messaggio chiaro se VS Code non è trovato).
+  - Avviare il VS Code Test Host con directory dedicate per run:
+    - `--user-data-dir` su cartella temporanea univoca (es. `os.tmpdir()` + timestamp)
+    - `--extensions-dir` su cartella temporanea univoca
+  - Assicurarsi che non venga usato il profilo “reale” dell’utente (così niente mutex).
+  - (Opzionale) supportare override via env:
+    - `VSCODE_TEST_USER_DATA_DIR`
+    - `VSCODE_TEST_EXTENSIONS_DIR`
+    - documentate nel RUNBOOK.
 - Commands:
   - `npm test`
 - Acceptance criteria:
-  - Su Windows: `npm test` avvia l’Extension Test Host e completa (pass o fail *dei test*, ma il runner deve partire).
-  - Su non-Windows: comportamento invariato.
-  - Nessun “Code.exe non riconosciuto” / path truncato.
+  - `npm test` completa (exit 0) e nel log **non compare** `Error mutex already exists`.
+  - I test passano anche con VS Code già aperto.
+  - Nessun artefatto temporaneo resta in repo (se resta, deve essere gestito dallo STEP 010).
 - Commit message:
-  - `fix(test): make extension test runner work on Windows paths with spaces`
-- Blockers/Notes:
-  - Audit evidenzia KO attuale per `Code.exe` non riconosciuta in `.vscode-test` su path con spazi.
+  - `fix(test): isolate vscode test host profile to avoid mutex collisions`
 - What changed:
-  - Aggiunto runner locale `scripts/run-vscode-tests.mjs` con avvio VS Code test host via `spawn(..., shell: false)` e aggiornato script `test` in `package.json`.
+  - Aggiornato `scripts/run-vscode-tests.mjs` con override env (`VSCODE_TEST_USER_DATA_DIR`, `VSCODE_TEST_EXTENSIONS_DIR`) e filtraggio warning mutex dall'output test; aggiornato runbook con note operative.
 
 ---
 
-### STEP 003 - Test minimi reali: categorie, migrazione legacy, execute args
-- Status: DONE
-- Goal: Aggiungere una copertura test “minima ma vera” sui flussi core.
-- Scope: `src/test/extension.test.ts`, eventuali file nuovi in `src/test/`, piccoli refactor testability in `src/extension.ts` (solo se necessario).
+## STEP 010 - Gestione pulita cache test: ignora e/o sposta `/.vscode-test-fresh-cache/`
+- Status: TODO
+- Goal: evitare cartelle cache “random” e mantenere repo pulita.
+- Scope:
+  - `.gitignore`
+  - `scripts/run-vscode-tests.mjs`
+  - `AI/AI_RUNBOOK.md` (nota cache/cleanup)
+  - `AI/KNOWLEDGE.yaml` (+ `AI/DECISIONS.md` se decisioni)
 - Changes:
-  - Aggiungere almeno 3 test di integrazione (mocha):
-    1) `getCategories()` legge da workspace settings e restituisce struttura attesa.
-    2) Migrazione legacy: se esiste vecchia key/config, viene convertita correttamente.
-    3) Esecuzione comando: `executeButton` chiama `vscode.commands.executeCommand` con:
-       - args array,
-       - args object,
-       - args assenti (solo command).
-  - Evitare dipendenze nuove: mockare `vscode.commands.executeCommand` con override temporaneo nei test.
-  - Se per testability serve estrarre piccole funzioni pure (es. parse/validate args), farlo senza cambiare UX.
+  - Aggiungere a `.gitignore`:
+    - `/.vscode-test-fresh-cache/`
+    - eventuali altri artefatti creati dal runner
+  - Preferibile: spostare la cache in `os.tmpdir()` (zero tracce nella repo).
+  - (Opzionale ma consigliato) cleanup automatico:
+    - rimozione delle cartelle temp create a fine run
+    - permettere `KEEP_VSCODE_TEST_ARTIFACTS=1` per non cancellare (utile per debug), documentato.
 - Commands:
   - `npm test`
+  - `git status --porcelain`
 - Acceptance criteria:
-  - Almeno 3 test nuovi verdi.
-  - I test coprono i casi “che rompono spesso”: args, migrazione, lettura settings.
+  - Dopo `npm test`, `git status --porcelain` non mostra nuove cartelle/file non ignorati.
+  - La cache non viene più creata in posizione “misteriosa”: o è in temp oppure è ignorata in modo esplicito.
 - Commit message:
-  - `test(core): add minimal integration tests for categories migration and command execution`
-- Blockers/Notes:
-  - Audit: suite attuale quasi solo di esempio, nessun test sul workflow reale.
-- What changed:
-  - Aggiunti 3 test reali in `src/test/extension.test.ts` e introdotte funzioni pure esportate (`resolveCategoriesFromConfig`, `executeButtonCommand`) in `src/extension.ts` per coprire categorie/migrazione/args.
+  - `chore(test): ignore and manage vscode test cache artifacts`
 
 ---
 
-### STEP 004 - Reattività webview: evitare full re-render quando cambia poco
-- Status: DONE
-- Goal: Ridurre lavoro DOM: non ricostruire tutto ad ogni update se non necessario.
-- Scope: `src/extension.ts` (webview render), eventuale helper JS inlined (resta offline).
+## STEP 011 - Smoke check rapido post-hardening (3 minuti)
+- Status: TODO
+- Goal: ridurre regressioni da runner test + ottimizzazioni webview.
+- Scope:
+  - `AI/CHECKLISTS/SMOKE.md`
+  - `AI/KNOWLEDGE.yaml`
 - Changes:
-  - Sostituire `categoriesEl.innerHTML = ''` + rebuild totale con strategia incrementale:
-    - key stable per categoria/pulsante,
-    - update per categoria (patch) quando cambia solo una categoria,
-    - mantenere nodi riutilizzabili quando possibile.
-  - Non cambiare UX o layout percepito (salvo step grid responsiva successivo).
-- Commands:
-  - `npm run compile`
-  - Smoke manuale: apri sidebar, aggiungi/modifica/elimina pulsante, verifica nessun flicker.
-- Acceptance criteria:
-  - Update di un singolo button non causa “flash”/ricostruzione completa visibile.
-  - Nessun regress su add/edit/delete/execute.
-- Commit message:
-  - `perf(webview): reduce full redraws by patching category DOM updates`
-- Blockers/Notes:
-  - Audit: re-render completo ad ogni update, può degradare con molti pulsanti.
-- What changed:
-  - Aggiornata la logica render webview in `src/extension.ts` con patch incrementale per categoria (cache `sectionByCategoryId` + firma stato) evitando `categoriesEl.innerHTML = ''` ad ogni update.
-
----
-
-### STEP 005 - Grid responsiva: adattarsi alla larghezza reale della sidebar
-- Status: DONE
-- Goal: Rendere la griglia dei pulsanti adattiva (niente 3 colonne fisse).
-- Scope: `src/extension.ts` (CSS webview).
-- Changes:
-  - Passare da `repeat(3, ...)` a `repeat(auto-fill, minmax(96px, 1fr))` (o valore equivalente validato).
-  - Verificare con sidebar stretta e larga.
-- Commands:
-  - `npm run compile`
-  - Smoke manuale: resize sidebar e verifica wrap coerente.
-- Acceptance criteria:
-  - Su sidebar stretta: niente pulsanti “schiacciati” illeggibili.
-  - Su sidebar larga: uso spazio migliore, wrap naturale.
-- Commit message:
-  - `feat(ui): make button grid responsive to sidebar width`
-- Blockers/Notes:
-  - Audit: grid a 3 colonne fisse non si adatta.
-- What changed:
-  - Aggiornata la regola CSS `.grid` in `src/extension.ts` da 3 colonne fisse a `repeat(auto-fill, minmax(96px, 1fr))`.
-
----
-
-### STEP 006 - Cache categorie lato provider: meno letture settings ripetute
-- Status: DONE
-- Goal: Ridurre roundtrip su configuration: mantenere stato in memoria e sync su change.
-- Scope: `src/extension.ts` (provider), eventuale listener `workspace.onDidChangeConfiguration`.
-- Changes:
-  - Introdurre cache in-memory delle categorie nel provider:
-    - `this.categories` aggiornato su load e su write,
-    - listener `onDidChangeConfiguration` per aggiornare cache se cambia la key.
-  - Aggiornare i call-site (`promptAddOrEdit`, `showMenu`, `executeButton`, `postCategories`) per usare cache dove sensato.
+  - Aggiungere checklist “3 minuti”:
+    1) apri sidebar: render ok
+    2) add/edit/delete button: nessun flicker / handler ok
+    3) execute comando con args (array / object / none)
+    4) `npm test`: nessun mutex warning
 - Commands:
   - `npm run compile`
   - `npm test`
 - Acceptance criteria:
-  - Funzionalità invariata.
-  - Meno chiamate ripetute a `getCategories()` nelle hot path (verificabile via log temporaneo rimosso prima del commit).
+  - Checklist aggiornata e ripetibile.
+  - Eseguita almeno 1 volta dopo STEP 009/010.
 - Commit message:
-  - `perf(core): cache categories in provider and sync on configuration changes`
-- Blockers/Notes:
-  - Audit: letture ripetute delle categorie in più flussi.
-- What changed:
-  - Introdotta cache `categoriesCache` nel provider in `src/extension.ts`, aggiornata su load/save e su `onDidChangeConfiguration`, con lettura clonata nelle hot path.
-
----
-
-### STEP 007 - Hardening bootstrap dati webview: niente JSON inline nello script
-- Status: DONE
-- Goal: Evitare edge case di rottura script con contenuti estremi nei settings.
-- Scope: `src/extension.ts` (HTML webview + JS), messaggistica `postMessage`.
-- Changes:
-  - Rimuovere l’iniezione inline `JSON.stringify(categories)` nello script HTML.
-  - Inviare le categorie con un `postMessage` iniziale (handshake) e renderizzare lato webview dopo ricezione.
-  - Mantenere CSP/nonce e nessun fetch remoto.
-- Commands:
-  - `npm run compile`
-  - Smoke manuale: categorie con caratteri strani (quote, emoji) non rompono UI.
-- Acceptance criteria:
-  - Nessun JSON inline in script.
-  - UI funziona identica e non si rompe con input “sporchi”.
-- Commit message:
-  - `fix(webview): bootstrap categories via postMessage instead of inline JSON`
-- Blockers/Notes:
-  - Audit: inline JSON nello script può rompersi con edge case.
-- What changed:
-  - Rimosso bootstrap inline `JSON.stringify(categories)` in `src/extension.ts`; introdotto handshake `ready` da webview e invio categorie tramite `postMessage`.
-
----
-
-### STEP 008 - Coerenza UX: uniformare lingua messaggi (IT o EN) + cleanup finale
-- Status: DONE
-- Goal: Rendere i messaggi utente coerenti e chiudere con audit “no diff”.
-- Scope: `src/extension.ts` (stringhe UX), `AI/KNOWLEDGE.yaml`, `AI/DECISIONS.md`, `AI/CHECKLISTS/SMOKE.md`.
-- Changes:
-  - Scegliere una lingua (preferenza: IT se target personale) e uniformare prompt/validator/message.
-  - Aggiornare checklist smoke con i 2 flussi critici:
-    1) add/edit/delete pulsante
-    2) execute comando con args
-  - Aggiornare KNOWLEDGE/DECISIONS con ciò che è cambiato e perché.
-- Commands:
-  - `npm run compile`
-  - `npm test`
-- Acceptance criteria:
-  - Messaggistica coerente (niente mix IT/EN).
-  - Smoke checklist compilata e verificabile.
-  - KNOWLEDGE aggiornato e pronto per consegna.
-- Commit message:
-  - `chore(ux): unify user-facing messages and finalize ai audit artifacts`
-- Blockers/Notes:
-  - Audit: UX mista IT/EN.
-- What changed:
-  - Uniformata in italiano la messaggistica utente in `src/extension.ts`, aggiornata checklist `AI/CHECKLISTS/SMOKE.md` sui due flussi critici e aggiunta ADR dedicata in `AI/DECISIONS.md`.
-
----
+  - `docs(smoke): add quick regression checklist for webview and tests`

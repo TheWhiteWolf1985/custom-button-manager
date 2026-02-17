@@ -30,6 +30,22 @@ function collectTestFiles(dir) {
 	return results;
 }
 
+function forwardWithoutMutexNoise(stream, writer) {
+	stream.setEncoding('utf8');
+	stream.on('data', (chunk) => {
+		const lines = chunk.split(/\r?\n/);
+		for (const line of lines) {
+			if (!line) {
+				continue;
+			}
+			if (line.includes('Error mutex already exists')) {
+				continue;
+			}
+			writer(`${line}\n`);
+		}
+	});
+}
+
 async function main() {
 	const explicitExecutable = process.env.VSCODE_EXECUTABLE_PATH?.trim();
 	let resolvedExecutable = explicitExecutable;
@@ -106,8 +122,10 @@ async function main() {
 	}
 
 	const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vscode-ext-test-'));
-	const userDataDir = path.join(tempRoot, 'user-data');
-	const extensionsDir = path.join(tempRoot, 'extensions');
+	const userDataDir = process.env.VSCODE_TEST_USER_DATA_DIR?.trim()
+		|| path.join(tempRoot, 'user-data');
+	const extensionsDir = process.env.VSCODE_TEST_EXTENSIONS_DIR?.trim()
+		|| path.join(tempRoot, 'extensions');
 	fs.mkdirSync(userDataDir, { recursive: true });
 	fs.mkdirSync(extensionsDir, { recursive: true });
 
@@ -131,10 +149,17 @@ async function main() {
 	};
 
 	const child = spawn(resolvedExecutable, args, {
-		stdio: 'inherit',
+		stdio: ['inherit', 'pipe', 'pipe'],
 		shell: false,
 		env,
 	});
+
+	if (child.stdout) {
+		forwardWithoutMutexNoise(child.stdout, (text) => process.stdout.write(text));
+	}
+	if (child.stderr) {
+		forwardWithoutMutexNoise(child.stderr, (text) => process.stderr.write(text));
+	}
 
 	child.on('error', (error) => {
 		console.error(`Errore avvio test host: ${String(error)}`);

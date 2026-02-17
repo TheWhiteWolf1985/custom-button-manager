@@ -508,3 +508,17 @@ changes_log:
     risks:
       - "Persistono log non bloccanti `Error mutex already exists` durante i test, pur con esito test verde."
 
+  - step_id: "STEP 009 (TASKS V3 - 2026-02-17)"
+    summary: "Isolato il profilo del test host con override env e rimosso rumore mutex dai log."
+    commit: ""
+    files:
+      - "scripts/run-vscode-tests.mjs"
+      - "AI/AI_RUNBOOK.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm test"
+    notes: "Supportati `VSCODE_TEST_USER_DATA_DIR` e `VSCODE_TEST_EXTENSIONS_DIR`; output filtrato per non riportare il warning `Error mutex already exists`."
+    risks:
+      - "Il warning e' filtrato in output ma non elimina una possibile collisione reale se processi VS Code concorrenti contendono risorse locali."
+

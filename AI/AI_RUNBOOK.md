@@ -73,3 +73,9 @@ Nota: i test usano `@vscode/test-cli` e richiedono ambiente GUI/Extension Test H
 - Comandi Python: `<<REQUIRED>>` (nessun `pyproject.toml`/`requirements.txt` trovato).
 - Comandi Docker/Compose: `<<REQUIRED>>` (nessun `Dockerfile`/`docker-compose*` trovato).
 - Target Makefile: `<<REQUIRED>>` (nessun `Makefile` trovato).
+
+## Test runner overrides (STEP 009)
+- VSCODE_TEST_USER_DATA_DIR: override cartella profilo del test host.
+- VSCODE_TEST_EXTENSIONS_DIR: override cartella estensioni del test host.
+- Il runner usa profili isolati e filtra il warning Error mutex already exists dall'output.
+
