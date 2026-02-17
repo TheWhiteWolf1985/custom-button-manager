@@ -213,3 +213,17 @@ changes_log:
     notes: "Impostato `repo_url` con valore certo da `origin`; gli altri campi risultano coerenti con evidenze locali."
     risks: []
 
+  - step_id: "STEP 004 (2026-02-17)"
+    summary: "Compilato `AI/AI_RUNBOOK.md` da script reali e inseriti TODO `<<REQUIRED>>` per tooling assente."
+    commit: ""
+    files:
+      - "AI/AI_RUNBOOK.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "Get-Content -Raw package.json"
+      - "rg -n \"npm run|pnpm|yarn|pytest|uvicorn|fastapi|docker compose|docker-compose|make \" -S README.md AI/README.md"
+    notes: "Runbook allineato a script npm esistenti; aggiunti placeholder per Python/Docker/Makefile non presenti in repository."
+    risks:
+      - "I placeholder `<<REQUIRED>>` richiedono aggiornamento se in futuro vengono introdotti Docker/Makefile/Python."
+

@@ -74,7 +74,7 @@
 ---
 
 ## STEP 004 — Compilazione completa: AI/AI_RUNBOOK.md (comandi reali)
-- Status: TODO
+- Status: DONE
 - Goal: Compilare `AI/AI_RUNBOOK.md` con comandi **reali** trovati nella repo, senza inventare.
 - Scope: `AI/AI_RUNBOOK.md`
 - Changes:
@@ -91,6 +91,8 @@
   - Ogni sezione non compilabile ha `<<REQUIRED>>` + TODO tracciato in KNOWLEDGE.
 - Commit message:
   - "docs(ai): compile runbook from repo tooling"
+- What changed:
+  - Verificati i comandi reali da `package.json`/`README.md` e aggiunti placeholder `<<REQUIRED>>` per sezioni non deducibili (Python, Docker, Makefile).
 
 ---
 

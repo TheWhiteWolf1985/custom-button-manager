@@ -60,3 +60,8 @@ Nota: i test usano `@vscode/test-cli` e richiedono ambiente GUI/Extension Test H
 - Errore JSON args in UI: correggere input in fase add/edit (deve essere JSON valido).
 - Pulsanti non persistono: verificare presenza workspace folder aperta.
 - Sidebar vuota inattesa: controllare setting `myCommandSidebar.categories` in `.vscode/settings.json` o workspace settings.
+
+## Sezioni non deducibili (TODO)
+- Comandi Python: `<<REQUIRED>>` (nessun `pyproject.toml`/`requirements.txt` trovato).
+- Comandi Docker/Compose: `<<REQUIRED>>` (nessun `Dockerfile`/`docker-compose*` trovato).
+- Target Makefile: `<<REQUIRED>>` (nessun `Makefile` trovato).
