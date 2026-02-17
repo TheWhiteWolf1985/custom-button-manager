@@ -111,6 +111,9 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.onDidReceiveMessage(async (message) => {
 			switch (message.type) {
+			case 'ready':
+				this.postCategories();
+				break;
 			case 'add':
 				await this.promptAddOrEdit(undefined, message.categoryIndex);
 				break;
@@ -124,8 +127,6 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 				break;
 			}
 		});
-
-		this.postCategories();
 	}
 
 	public async promptAddOrEdit(existing?: CommandButton, categoryIndex?: number, buttonIndex?: number): Promise<void> {
@@ -465,10 +466,10 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 <body>
 	<div id="categories" class="categories"></div>
 	<div id="empty" class="empty" hidden>Nessun comando. Usa + sulla categoria per aggiungerne uno.</div>
-	<script nonce="${nonce}">
-		const vscode = acquireVsCodeApi();
-		let categories = ${JSON.stringify(categories)};
-		const collapsed = new Map();
+		<script nonce="${nonce}">
+			const vscode = acquireVsCodeApi();
+			let categories = [];
+			const collapsed = new Map();
 
 		const categoriesEl = document.getElementById('categories');
 		const emptyEl = document.getElementById('empty');
@@ -611,16 +612,17 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 					}
 				}
 			}
-		window.addEventListener('message', (event) => {
-			const { type, categories: updated } = event.data;
-			if (type === 'categories') {
-				categories = Array.isArray(updated) ? updated : [];
-				render();
-			}
-		});
+			window.addEventListener('message', (event) => {
+				const { type, categories: updated } = event.data;
+				if (type === 'categories') {
+					categories = Array.isArray(updated) ? updated : [];
+					render();
+				}
+			});
 
-		render();
-	</script>
+			vscode.postMessage({ type: 'ready' });
+			render();
+		</script>
 </body>
 </html>`;
 	}

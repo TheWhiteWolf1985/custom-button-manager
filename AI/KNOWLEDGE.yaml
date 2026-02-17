@@ -70,6 +70,12 @@ entities:
     path: "src/extension.ts"
     notes: "Cache in-memory delle categorie sincronizzata con workspace configuration."
 
+  - id: "event.webview.ready"
+    type: "Event"
+    name: "webview ready"
+    path: "src/extension.ts"
+    notes: "Messaggio iniziale `ready` inviato dalla webview per bootstrap dati via postMessage."
+
   - id: "debug.launch.runExtension"
     type: "DebugConfig"
     name: "Run Extension"
@@ -136,6 +142,14 @@ relations:
   - from: "runtime.extension.activate"
     type: "depends_on"
     to: "state.categoriesCache"
+
+  - from: "view.myCommandSidebar"
+    type: "emits_event"
+    to: "event.webview.ready"
+
+  - from: "runtime.extension.activate"
+    type: "listens_event"
+    to: "event.webview.ready"
 
   - from: "debug.launch.runExtension"
     type: "runs"
@@ -453,4 +467,18 @@ changes_log:
     notes: "Cache `categoriesCache` aggiornata su resolve, save e change configuration; `getCategories()` ora usa clone da cache."
     risks:
       - "Se future modifiche mutano oggetti categorie fuori dai metodi provider, la coerenza cache puo' degradare."
+
+  - step_id: "STEP 007 (TASKS V2 - 2026-02-17)"
+    summary: "Hardening bootstrap webview: rimosso JSON inline e introdotto handshake `ready`."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+    notes: "Il payload categorie non viene piu' serializzato inline nello script HTML; bootstrap iniziale tramite evento `ready` + `postMessage`."
+    risks:
+      - "Se il messaggio `ready` non arriva, la webview resta vuota: mantenere smoke manuale all'avvio."
 

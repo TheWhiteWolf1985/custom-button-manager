@@ -161,7 +161,7 @@ Regole:
 ---
 
 ### STEP 007 - Hardening bootstrap dati webview: niente JSON inline nello script
-- Status: TODO
+- Status: DONE
 - Goal: Evitare edge case di rottura script con contenuti estremi nei settings.
 - Scope: `src/extension.ts` (HTML webview + JS), messaggistica `postMessage`.
 - Changes:
@@ -178,6 +178,8 @@ Regole:
   - `fix(webview): bootstrap categories via postMessage instead of inline JSON`
 - Blockers/Notes:
   - Audit: inline JSON nello script può rompersi con edge case.
+- What changed:
+  - Rimosso bootstrap inline `JSON.stringify(categories)` in `src/extension.ts`; introdotto handshake `ready` da webview e invio categorie tramite `postMessage`.
 
 ---
 
