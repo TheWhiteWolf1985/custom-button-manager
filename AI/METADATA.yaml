@@ -1,0 +1,8 @@
+project_name: "custom-command-sidebar"
+owner: "J. Zanella"
+repo_url: ""
+ai_kit_version: "1.0.0"
+created_at: "2026-02-17"
+updated_at: "2026-02-17"
+stack_summary: "VS Code Extension, TypeScript, Node.js, esbuild, ESLint, @vscode/test-cli"
+notes: "Repository locale per estensione VS Code con sidebar webview configurabile tramite workspace settings."

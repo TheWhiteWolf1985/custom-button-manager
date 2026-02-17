@@ -1,0 +1,143 @@
+meta:
+  project: "custom-command-sidebar"
+  ai_kit_version: "1.0.0"
+  updated_at: "2026-02-17"
+
+entities:
+  - id: "ext.custom-command-sidebar"
+    type: "VSCodeExtension"
+    name: "Custom command sidebar"
+    path: "package.json"
+    notes: "Estensione VS Code con activity bar webview e pulsanti comando configurabili."
+
+  - id: "runtime.extension.activate"
+    type: "EntryPoint"
+    name: "activate"
+    path: "src/extension.ts"
+    notes: "Registra provider webview e comandi dell'estensione."
+
+  - id: "view.myCommandSidebar"
+    type: "WebviewView"
+    name: "myCommandSidebar.view"
+    path: "package.json"
+    notes: "Vista webview nella activity bar Commands."
+
+  - id: "config.myCommandSidebar.categories"
+    type: "WorkspaceSetting"
+    name: "myCommandSidebar.categories"
+    path: "package.json"
+    notes: "Struttura categorie/pulsanti persistita in workspace settings."
+
+  - id: "command.addButton"
+    type: "VSCodeCommand"
+    name: "myCommandSidebar.addButton"
+    path: "package.json"
+    notes: "Avvia prompt aggiunta pulsante nella categoria selezionata."
+
+  - id: "command.helloWorld"
+    type: "VSCodeCommand"
+    name: "custom-command-sidebar.helloWorld"
+    path: "package.json"
+    notes: "Comando demo generato da template."
+
+  - id: "build.esbuild"
+    type: "BuildScript"
+    name: "esbuild bundle"
+    path: "esbuild.js"
+    notes: "Bundle CJS in `dist/extension.js` con external `vscode`."
+
+  - id: "debug.launch.runExtension"
+    type: "DebugConfig"
+    name: "Run Extension"
+    path: ".vscode/launch.json"
+    notes: "Avvia Extension Development Host con workspace corrente."
+
+  - id: "tests.sample"
+    type: "TestSuite"
+    name: "Extension Test Suite"
+    path: "src/test/extension.test.ts"
+    notes: "Suite base di esempio, copertura funzionale limitata."
+
+relations:
+  - from: "ext.custom-command-sidebar"
+    type: "activates_on"
+    to: "view.myCommandSidebar"
+
+  - from: "runtime.extension.activate"
+    type: "registers_command"
+    to: "command.addButton"
+
+  - from: "runtime.extension.activate"
+    type: "registers_command"
+    to: "command.helloWorld"
+
+  - from: "runtime.extension.activate"
+    type: "registers_view_provider"
+    to: "view.myCommandSidebar"
+
+  - from: "view.myCommandSidebar"
+    type: "reads_setting"
+    to: "config.myCommandSidebar.categories"
+
+  - from: "build.esbuild"
+    type: "bundles"
+    to: "runtime.extension.activate"
+
+  - from: "debug.launch.runExtension"
+    type: "runs"
+    to: "ext.custom-command-sidebar"
+
+changes_log:
+  - step_id: "STEP 001"
+    summary: "Compilati i file base del kit AI con mappa tecnica del repository e task operativi verificabili."
+    commit: ""
+    files:
+      - "AI/AI_PROJECT.md"
+      - "AI/AI_PRD.md"
+      - "AI/AI_CONVENTIONS.md"
+      - "AI/AI_RUNBOOK.md"
+      - "AI/AI_INVENTORY.md"
+      - "AI/METADATA.yaml"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+      - "AI/DECISIONS.md"
+    commands:
+      - "rg --files"
+      - "Get-Content README.md package.json tsconfig.json esbuild.js eslint.config.mjs src/extension.ts src/test/extension.test.ts .vscode/launch.json"
+    notes: "Documentazione AI allineata allo stato corrente della repo senza modifiche al codice runtime."
+    risks:
+      - "README principale ancora template e non descrive feature reali in dettaglio."
+      - "Test suite applicativa minima: copertura comportamento webview non presente."
+
+  - step_id: "STEP 002"
+    summary: "Eseguita verifica dipendenze e quality gate tecnico principale (`compile`)."
+    commit: ""
+    files:
+      - "package-lock.json"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm install"
+      - "npm run compile"
+    notes: "Comandi completati con successo; `npm install` segnala 3 vulnerabilita' low non bloccanti da audit dipendenze."
+    risks:
+      - "Vulnerabilita' low nelle dipendenze dev rilevate da npm audit."
+      - "`npm test` non eseguito in questo ciclo: richiede host VS Code predisposto."
+
+  - step_id: "STEP 003"
+    summary: "Chiuso audit AI con controllo placeholder e allineamento finale task/knowledge."
+    commit: ""
+    files:
+      - "AI/README.md"
+      - "AI/EXAMPLES/EXAMPLE_AI_TASKS.md"
+      - "AI/AI_PROJECT.md"
+      - "AI/AI_PRD.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "rg \"placeholder obbligatori\" AI"
+      - "git status --short"
+    notes: "Nessun placeholder obbligatorio residuo in `AI/`."
+    risks:
+      - "Le checklist smoke/release sono compilabili ma non ancora eseguite come checklist formali file-per-file."
+
