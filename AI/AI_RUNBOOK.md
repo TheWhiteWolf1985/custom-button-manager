@@ -44,6 +44,13 @@ Note Windows (PowerShell):
 
 Nota: i test usano `@vscode/test-cli` e richiedono ambiente GUI/Extension Test Host disponibile.
 
+### Baseline test runner (Windows, 2026-02-17)
+- `npm install`: OK
+- `npm run compile`: OK
+- `npm run lint`: OK
+- `npm test`: KO (runner non avviato)
+- Errore osservato: `Code.exe non è riconosciuto come comando interno o esterno` su path `.vscode-test` con spazi.
+
 ## Packaging
 - Bundle per marketplace locale:
   - `npm run package`
@@ -60,6 +67,7 @@ Nota: i test usano `@vscode/test-cli` e richiedono ambiente GUI/Extension Test H
 - Errore JSON args in UI: correggere input in fase add/edit (deve essere JSON valido).
 - Pulsanti non persistono: verificare presenza workspace folder aperta.
 - Sidebar vuota inattesa: controllare setting `myCommandSidebar.categories` in `.vscode/settings.json` o workspace settings.
+- Se `npm test` fallisce con `Code.exe non è riconosciuto`, verificare path workspace con spazi e usare il runner aggiornato (STEP 002 in `AI/AI_TASKS.md`).
 
 ## Sezioni non deducibili (TODO)
 - Comandi Python: `<<REQUIRED>>` (nessun `pyproject.toml`/`requirements.txt` trovato).

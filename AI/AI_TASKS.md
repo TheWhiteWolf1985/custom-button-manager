@@ -1,220 +1,196 @@
-﻿# AI_TASKS — Bootstrap contenuti AI/ in repo esistente (struttura già creata)
+﻿# AI_TASKS - custom-command-sidebar (VSCode-custom-button)
 
-> **Assunzione**: la cartella `AI/` esiste già con la struttura standard e i file presenti.  
-> **Obiettivo**: Codex deve **solo aggiornare/compilare i contenuti dei file** in `AI/` usando informazioni **certe** trovate nella repo (e nelle doc esistenti), senza inventare.  
-> **Regola anti-invenzione**: se un dato non è presente o non è deducibile con certezza → usare `<<REQUIRED>>` / `<<OPTIONAL>>` e registrare il TODO in `AI/KNOWLEDGE.yaml` (changes_log).
+Fonte principale: audit tecnico 2026-02-17.  
+Obiettivo: rendere il progetto più robusto e “production-ready” senza refactor gratuiti.
+
+Regole:
+- Cambi piccoli, verificabili, e con commit Conventional Commits.
+- No nuove dipendenze senza necessità esplicita (se servono, motivarle nello step).
+- Ogni step aggiorna `AI/KNOWLEDGE.yaml` e, se serve, `AI/DECISIONS.md`.
 
 ---
 
-## STEP 001 — Preflight: lettura standard e verifica file AI/
+### STEP 001 - Riproduzione baseline e messa in chiaro dei comandi
 - Status: DONE
-- Goal: Capire lo standard leggendo `AI/README.md` e verificare che tutti i file standard esistano (senza crearli).
-- Scope:
-  - `AI/README.md`
-  - Tutti i file standard dentro `AI/` (PROJECT, PRD, TASKS, RUNBOOK, CONVENTIONS, INVENTORY, DECISIONS, KNOWLEDGE, CHECKLISTS, SCHEMAS)
+- Goal: Rendere ripetibile lo stato attuale e fissare i comandi reali di build/test.
+- Scope: `package.json`, `.vscode-test.mjs` (solo lettura/annotazioni se serve), `AI/AI_RUNBOOK.md` (se già presente), `AI/KNOWLEDGE.yaml`.
 - Changes:
-  - **NON creare** file/cartelle.
-  - Se mancano file standard: elencarli in output e segnare `<<REQUIRED>>` nel report (vedi STEP 007). **Non proseguire** se mancano file chiave (`AI/README.md`, `AI/AI_PROJECT.md`, `AI/AI_PRD.md`, `AI/AI_RUNBOOK.md`, `AI/AI_TASKS.md`, `AI/KNOWLEDGE.yaml`).
+  - Verificare e documentare i comandi reali: install, compile, lint, test.
+  - Annotare il failure attuale di `npm test` su Windows (path con spazi / Code.exe non risolto).
+  - Aggiornare RUNBOOK con troubleshooting minimo per test (senza ancora fixare).
 - Commands:
-  - (bash) `ls -la AI && find AI -maxdepth 3 -type f -print`
-  - (pwsh) `Get-ChildItem AI -Recurse -Force | Select-Object FullName,Length`
+  - `npm install`
+  - `npm run compile`
+  - `npm run lint` (se presente)
+  - `npm test` (atteso KO su Windows al momento)
 - Acceptance criteria:
-  - `AI/README.md` letto e compreso.
-  - Lista completa dei file standard presenti/mancanti prodotta (senza creare nulla).
+  - RUNBOOK/KNOWLEDGE aggiornati con comandi e risultato baseline (OK/KO) riproducibile.
+  - Nessuna modifica funzionale al runtime dell’estensione.
 - Commit message:
-  - "docs(ai): preflight AI standard check"
+  - `chore(ai): record baseline build and test status`
+- Blockers/Notes:
+  - Il test runner oggi fallisce su Windows con path contenenti spazi (audit).
 - What changed:
-  - Letto `AI/README.md` e verificata la presenza dei file standard in `AI/` senza creare nuove risorse.
----
-
-## STEP 002 — Scansione repo: tooling, comandi reali, entrypoint, doc esistenti
-- Status: DONE
-- Goal: Raccogliere segnali **certi** per compilare `RUNBOOK`, `METADATA`, `INVENTORY`, `PRD`, senza supposizioni.
-- Scope:
-  - Root e cartelle principali della repo
-  - Indicatori tooling: `package.json`, lockfile, `pyproject.toml`, `requirements.txt`, `Dockerfile`, `docker-compose*`, `Makefile`, `pom.xml`, `build.gradle*`, `go.mod`, `Cargo.toml`, `*.sln`, `*.csproj`
-  - Doc: `README*`, `docs/`, `openapi.*`, `swagger.*`, `api*.yaml|yml|json`, `schema.sql`, `migrations/`, `db/`, `infra/`
-- Changes:
-  - Nessuna modifica ancora ai file AI/: solo raccolta evidenze (paths + estratti utili).
-  - Preparare una lista “EVIDENZE” (file → cosa contiene) da riversare nel changes_log di `AI/KNOWLEDGE.yaml`.
-- Commands:
-  - (bash) `ls -la`
-  - (bash) `find . -maxdepth 4 -type f \( -name "package.json" -o -name "pyproject.toml" -o -name "requirements.txt" -o -name "Dockerfile" -o -name "docker-compose*.yml" -o -name "docker-compose*.yaml" -o -name "Makefile" -o -name "go.mod" -o -name "Cargo.toml" -o -name "pom.xml" -o -name "build.gradle" -o -name "build.gradle.kts" -o -name "*.sln" -o -name "*.csproj" \) -print`
-  - `rg -n "openapi|swagger|FastAPI|Uvicorn|SQLAlchemy|alembic|docker-compose|kubernetes|flutter|platformio|ble" -S .`
-  - Se esiste `package.json`: leggere scripts (`cat package.json` / `Get-Content package.json`)
-- Acceptance criteria:
-  - Elenco indicatori tooling trovato (o vuoto) + riferimenti alle doc/API/schema/migrations se presenti.
-- Commit message:
-  - "docs(ai): collect repo evidence for AI files"
-- What changed:
-  - Raccolte evidenze certe su tooling e documentazione presenti in repo (`package.json`, `package-lock.json`, `README.md`, `CHANGELOG.md`, `.vscode/launch.json`, `src/extension.ts`).
+  - Aggiornato `AI/AI_RUNBOOK.md` con baseline riproducibile comandi (install/compile/lint/test) e dettaglio errore attuale su `npm test` in Windows.
 
 ---
 
-## STEP 003 — Compilazione completa: AI/METADATA.yaml
-- Status: DONE
-- Goal: Compilare `AI/METADATA.yaml` usando solo dati certi (repo name, remote se presente, stack dedotto da indicatori).
-- Scope: `AI/METADATA.yaml`
+### STEP 002 - Fix test runner: `npm test` deve funzionare su Windows (path con spazi)
+- Status: TODO
+- Goal: Rendere eseguibile `npm test` in ambiente Windows anche con workspace path contenenti spazi.
+- Scope: `.vscode-test.mjs`, `package.json` (script test), eventuale utilità locale in `scripts/` se necessaria.
 - Changes:
-  - Compilare campi con evidenza:
-    - `project_name`: (se certo) nome repo/cartella root
-    - `repo_url`: (se `.git` e origin presente) URL origin
-    - `stack_summary`: basato su indicatori (es. Node/FastAPI/Docker ecc.)
-    - `created_at/updated_at`: usare date attuali solo se previste dal file; altrimenti `<<OPTIONAL>>`
-  - Tutto il resto resta `<<REQUIRED>>`/`<<OPTIONAL>>` se non certo.
+  - Sistemare la risoluzione dell’executable VS Code usato dai test (`Code.exe`) evitando problemi di quoting/spazi.
+  - Preferire approccio compatibile con `@vscode/test-electron`:
+    - usare path assoluto corretto,
+    - evitare concatenazioni “a stringa” non quotate,
+    - se serve: fallback via env var (`VSCODE_EXECUTABLE_PATH`) documentata.
+  - Rendere il fallimento “parlante” (messaggio chiaro se VS Code non è trovato).
 - Commands:
-  - Se `.git` esiste: `git remote -v` / `git rev-parse --show-toplevel`
+  - `npm test`
 - Acceptance criteria:
-  - `AI/METADATA.yaml` compilato con info certe + placeholders dove serve.
+  - Su Windows: `npm test` avvia l’Extension Test Host e completa (pass o fail *dei test*, ma il runner deve partire).
+  - Su non-Windows: comportamento invariato.
+  - Nessun “Code.exe non riconosciuto” / path truncato.
 - Commit message:
-  - "docs(ai): compile metadata"
-- What changed:
-  - Compilato `repo_url` da `git remote -v` e confermati `project_name`/`stack_summary` su evidenze di repository.
+  - `fix(test): make extension test runner work on Windows paths with spaces`
+- Blockers/Notes:
+  - Audit evidenzia KO attuale per `Code.exe` non riconosciuta in `.vscode-test` su path con spazi.
 
 ---
 
-## STEP 004 — Compilazione completa: AI/AI_RUNBOOK.md (comandi reali)
-- Status: DONE
-- Goal: Compilare `AI/AI_RUNBOOK.md` con comandi **reali** trovati nella repo, senza inventare.
-- Scope: `AI/AI_RUNBOOK.md`
+### STEP 003 - Test minimi reali: categorie, migrazione legacy, execute args
+- Status: TODO
+- Goal: Aggiungere una copertura test “minima ma vera” sui flussi core.
+- Scope: `src/test/extension.test.ts`, eventuali file nuovi in `src/test/`, piccoli refactor testability in `src/extension.ts` (solo se necessario).
 - Changes:
-  - Se Node: usare `package.json` scripts (dev/build/test/lint/typecheck/format) se esistono.
-  - Se Python: leggere doc/pyproject/requirements e indicare comandi solo se espliciti.
-  - Se Docker: indicare presenza di Dockerfile/compose e i comandi solo se documentati.
-  - Se Makefile: elencare target esistenti (senza interpretarli).
-  - Se comandi non deducibili: lasciare `<<REQUIRED>>` e aggiungere TODO in `AI/KNOWLEDGE.yaml`.
+  - Aggiungere almeno 3 test di integrazione (mocha):
+    1) `getCategories()` legge da workspace settings e restituisce struttura attesa.
+    2) Migrazione legacy: se esiste vecchia key/config, viene convertita correttamente.
+    3) Esecuzione comando: `executeButton` chiama `vscode.commands.executeCommand` con:
+       - args array,
+       - args object,
+       - args assenti (solo command).
+  - Evitare dipendenze nuove: mockare `vscode.commands.executeCommand` con override temporaneo nei test.
+  - Se per testability serve estrarre piccole funzioni pure (es. parse/validate args), farlo senza cambiare UX.
 - Commands:
-  - Lettura `package.json` / Makefile / doc presenti
-  - (bash) `rg -n "npm run|pnpm|yarn|pytest|uvicorn|fastapi|docker compose|docker-compose|make " -S README* docs -g'!*node_modules/*'`
+  - `npm test`
 - Acceptance criteria:
-  - Runbook contiene solo comandi supportati da file reali.
-  - Ogni sezione non compilabile ha `<<REQUIRED>>` + TODO tracciato in KNOWLEDGE.
+  - Almeno 3 test nuovi verdi.
+  - I test coprono i casi “che rompono spesso”: args, migrazione, lettura settings.
 - Commit message:
-  - "docs(ai): compile runbook from repo tooling"
-- What changed:
-  - Verificati i comandi reali da `package.json`/`README.md` e aggiunti placeholder `<<REQUIRED>>` per sezioni non deducibili (Python, Docker, Makefile).
+  - `test(core): add minimal integration tests for categories migration and command execution`
+- Blockers/Notes:
+  - Audit: suite attuale quasi solo di esempio, nessun test sul workflow reale.
 
 ---
 
-## STEP 005 — Compilazione completa: AI/AI_INVENTORY.md + AI/AI_CONVENTIONS.md
-- Status: DONE
-- Goal: Popolare inventario e convenzioni con info esplicite (da repo/doc), senza assunzioni.
-- Scope:
-  - `AI/AI_INVENTORY.md`
-  - `AI/AI_CONVENTIONS.md`
+### STEP 004 - Reattività webview: evitare full re-render quando cambia poco
+- Status: TODO
+- Goal: Ridurre lavoro DOM: non ricostruire tutto ad ogni update se non necessario.
+- Scope: `src/extension.ts` (webview render), eventuale helper JS inlined (resta offline).
 - Changes:
-  - INVENTORY:
-    - elencare componenti/moduli/cartelle principali (solo “cosa esiste”, non “cosa fa” se non documentato)
-    - integrare con informazioni esplicite trovate in eventuali cartelle legacy (se presenti in repo) o README
-  - CONVENTIONS:
-    - se esistono regole commit (CONTRIBUTING, doc, pattern commit history), riportarle
-    - se non esistono evidenze, lasciare `<<REQUIRED>>` per “commit style” e “testing conventions”
+  - Sostituire `categoriesEl.innerHTML = ''` + rebuild totale con strategia incrementale:
+    - key stable per categoria/pulsante,
+    - update per categoria (patch) quando cambia solo una categoria,
+    - mantenere nodi riutilizzabili quando possibile.
+  - Non cambiare UX o layout percepito (salvo step grid responsiva successivo).
 - Commands:
-  - `ls`/`find` root dirs
-  - `rg -n "conventional commits|commit message|lint|format|prettier|eslint|black|ruff|flake8|mypy|pytest" -S .`
-  - (opzionale, non distruttivo) `git log -n 30 --pretty=oneline` se git presente (solo per osservare pattern)
+  - `npm run compile`
+  - Smoke manuale: apri sidebar, aggiungi/modifica/elimina pulsante, verifica nessun flicker.
 - Acceptance criteria:
-  - INVENTORY descrive ciò che esiste senza interpretazioni non supportate.
-  - CONVENTIONS contiene solo standard supportati o placeholders.
+  - Update di un singolo button non causa “flash”/ricostruzione completa visibile.
+  - Nessun regress su add/edit/delete/execute.
 - Commit message:
-  - "docs(ai): compile inventory and conventions"
-- What changed:
-  - Verificate cartelle/componenti esistenti in `AI_INVENTORY.md` e aggiornate convenzioni con placeholder `<<REQUIRED>>` dove non esiste policy esplicita (branch naming).
+  - `perf(webview): reduce full redraws by patching category DOM updates`
+- Blockers/Notes:
+  - Audit: re-render completo ad ogni update, può degradare con molti pulsanti.
 
 ---
 
-## STEP 006 — Compilazione completa: AI/AI_PROJECT.md + AI/AI_PRD.md
-- Status: DONE
-- Goal: Compilare obiettivi/vincoli (PROJECT) e specifiche (PRD) usando doc esistenti nella repo.
-- Scope:
-  - `AI/AI_PROJECT.md`
-  - `AI/AI_PRD.md`
+### STEP 005 - Grid responsiva: adattarsi alla larghezza reale della sidebar
+- Status: TODO
+- Goal: Rendere la griglia dei pulsanti adattiva (niente 3 colonne fisse).
+- Scope: `src/extension.ts` (CSS webview).
 - Changes:
-  - AI_PROJECT:
-    - Obiettivi, non-obiettivi, vincoli, DoD, quality gates, sicurezza/privacy, logging/observability
-    - Solo se supportati da README/docs/config; altrimenti placeholders
-  - AI_PRD:
-    - Overview/scope
-    - Flussi e requisiti (UI se esiste frontend, API se esiste backend)
-    - Contratti API se presenti (OpenAPI/Swagger/YAML)
-    - Data model se presenti migrazioni/schema
-    - Error handling + osservabilità se documentati
-    - Test plan: derivare da runbook/scripts (solo se certi)
+  - Passare da `repeat(3, ...)` a `repeat(auto-fill, minmax(96px, 1fr))` (o valore equivalente validato).
+  - Verificare con sidebar stretta e larga.
 - Commands:
-  - Lettura README/docs
-  - Ricerca `openapi|swagger|schema|migration|alembic|models|routes|endpoints` con `rg`
+  - `npm run compile`
+  - Smoke manuale: resize sidebar e verifica wrap coerente.
 - Acceptance criteria:
-  - PROJECT e PRD sono compilati con informazioni supportate e hanno placeholders dove mancano dati.
-  - Nessuna “feature” o requisito inventato.
+  - Su sidebar stretta: niente pulsanti “schiacciati” illeggibili.
+  - Su sidebar larga: uso spazio migliore, wrap naturale.
 - Commit message:
-  - "docs(ai): compile project and prd"
-- What changed:
-  - Verificata coerenza di `AI/AI_PROJECT.md` e `AI/AI_PRD.md` con README/config/codebase corrente; nessun contenuto aggiuntivo necessario oltre alle evidenze già presenti.
+  - `feat(ui): make button grid responsive to sidebar width`
+- Blockers/Notes:
+  - Audit: grid a 3 colonne fisse non si adatta.
 
 ---
 
-## STEP 007 — Normalizzazione: AI/DECISIONS.md + AI/KNOWLEDGE.yaml (tracciabilità + TODO)
-- Status: DONE
-- Goal: Garantire tracciabilità (decisioni) e memoria esterna (knowledge) includendo evidenze, TODO e una entry “bootstrap”.
-- Scope:
-  - `AI/DECISIONS.md`
-  - `AI/KNOWLEDGE.yaml`
+### STEP 006 - Cache categorie lato provider: meno letture settings ripetute
+- Status: TODO
+- Goal: Ridurre roundtrip su configuration: mantenere stato in memoria e sync su change.
+- Scope: `src/extension.ts` (provider), eventuale listener `workspace.onDidChangeConfiguration`.
 - Changes:
-  - DECISIONS:
-    - Se esistono decisioni esplicite in docs/repo, riportarle in formato ADR.
-    - Se non ci sono, lasciare template + “Nessuna decisione rilevata (bootstrap)”.
-  - KNOWLEDGE:
-    - Assicurare YAML valido e schema coerente (meta/entities/relations/changes_log).
-    - Aggiungere in `changes_log` una entry: `bootstrap_ai_kit_from_repo` con:
-      - sources_used: lista file/paths letti (README, package.json, openapi, migrations…)
-      - summary: cosa è stato compilato
-      - todo_required: elenco placeholders <<REQUIRED>> rimasti (file → campo)
+  - Introdurre cache in-memory delle categorie nel provider:
+    - `this.categories` aggiornato su load e su write,
+    - listener `onDidChangeConfiguration` per aggiornare cache se cambia la key.
+  - Aggiornare i call-site (`promptAddOrEdit`, `showMenu`, `executeButton`, `postCategories`) per usare cache dove sensato.
 - Commands:
-  - Validazione YAML (se disponibile):
-    - `python -c "import yaml; yaml.safe_load(open('AI/KNOWLEDGE.yaml','r',encoding='utf-8'))"` (solo se PyYAML installato)
-    - altrimenti: controllo manuale e nota “YAML parser non disponibile”
+  - `npm run compile`
+  - `npm test`
 - Acceptance criteria:
-  - KNOWLEDGE.yaml è valido e contiene entry changes_log bootstrap + TODO.
-  - DECISIONS coerente e non inventato.
+  - Funzionalità invariata.
+  - Meno chiamate ripetute a `getCategories()` nelle hot path (verificabile via log temporaneo rimosso prima del commit).
 - Commit message:
-  - "docs(ai): normalize decisions and knowledge"
-- What changed:
-  - Aggiornati `AI/DECISIONS.md` (ADR bootstrap) e `AI/KNOWLEDGE.yaml` con entry `bootstrap_ai_kit_from_repo`, TODO `<<REQUIRED>>` residui e nota fallback per validazione YAML senza PyYAML.
+  - `perf(core): cache categories in provider and sync on configuration changes`
+- Blockers/Notes:
+  - Audit: letture ripetute delle categorie in più flussi.
 
 ---
 
-## STEP 008 — Validazioni finali + audit (senza diff)
-- Status: DONE
-- Goal: Garantire che i file AI siano coerenti e pronti per essere usati dal Product Engineer.
-- Scope:
-  - `AI/` (tutti i file)
+### STEP 007 - Hardening bootstrap dati webview: niente JSON inline nello script
+- Status: TODO
+- Goal: Evitare edge case di rottura script con contenuti estremi nei settings.
+- Scope: `src/extension.ts` (HTML webview + JS), messaggistica `postMessage`.
 - Changes:
-  - Validare JSON schema in `AI/SCHEMAS/*.json` (parse ok).
-  - Verificare che `AI/README.md` descriva correttamente i file presenti.
-  - Verificare assenza riferimenti a template legacy non pertinenti.
-  - Produrre audit finale in output (console) e, se previsto dallo standard del progetto, aggiornare una sezione “Audit” in `AI/KNOWLEDGE.yaml` (solo se già prevista).
+  - Rimuovere l’iniezione inline `JSON.stringify(categories)` nello script HTML.
+  - Inviare le categorie con un `postMessage` iniziale (handshake) e renderizzare lato webview dopo ricezione.
+  - Mantenere CSP/nonce e nessun fetch remoto.
 - Commands:
-  - `rg -n -i "legacy|bootstrap-kit" AI` (o equivalente per ricerca riferimenti legacy)
-  - Parse JSON:
-    - `python -c "import json,glob; [json.load(open(p,'r',encoding='utf-8')) for p in glob.glob('AI/SCHEMAS/*.json')]; print('OK')"` (se python disponibile)
-  - Tree AI:
-    - `find AI -maxdepth 3 -type f -print` / `Get-ChildItem AI -Recurse`
+  - `npm run compile`
+  - Smoke manuale: categorie con caratteri strani (quote, emoji) non rompono UI.
 - Acceptance criteria:
-  - Nessun riferimento a template/init.
-  - JSON parse OK.
-  - Audit stampato con: file modificati, comandi letti, TODO rimasti.
+  - Nessun JSON inline in script.
+  - UI funziona identica e non si rompe con input “sporchi”.
 - Commit message:
-  - "docs(ai): finalize ai docs bootstrap"
-- What changed:
-  - Eseguite validazioni finali su riferimenti legacy, parse JSON degli schemi (`utf-8-sig`) e verifica tree `AI/`; predisposto audit finale con commit/test/rischi residui.
+  - `fix(webview): bootstrap categories via postMessage instead of inline JSON`
+- Blockers/Notes:
+  - Audit: inline JSON nello script può rompersi con edge case.
 
 ---
 
-## Audit finale atteso (da stampare in output, NO DIFF)
-- Stato: “BOOTSTRAP AI COMPLETATO”
-- Stack/tooling rilevati: (bullet)
-- File AI aggiornati: (lista percorsi)
-- Evidenze usate: (top 10 file/paths)
-- TODO rimasti (<<REQUIRED>>): (lista file → campo)
-- Comandi reali raccolti (runbook): (lista)
+### STEP 008 - Coerenza UX: uniformare lingua messaggi (IT o EN) + cleanup finale
+- Status: TODO
+- Goal: Rendere i messaggi utente coerenti e chiudere con audit “no diff”.
+- Scope: `src/extension.ts` (stringhe UX), `AI/KNOWLEDGE.yaml`, `AI/DECISIONS.md`, `AI/CHECKLISTS/SMOKE.md`.
+- Changes:
+  - Scegliere una lingua (preferenza: IT se target personale) e uniformare prompt/validator/message.
+  - Aggiornare checklist smoke con i 2 flussi critici:
+    1) add/edit/delete pulsante
+    2) execute comando con args
+  - Aggiornare KNOWLEDGE/DECISIONS con ciò che è cambiato e perché.
+- Commands:
+  - `npm run compile`
+  - `npm test`
+- Acceptance criteria:
+  - Messaggistica coerente (niente mix IT/EN).
+  - Smoke checklist compilata e verificabile.
+  - KNOWLEDGE aggiornato e pronto per consegna.
+- Commit message:
+  - `chore(ux): unify user-facing messages and finalize ai audit artifacts`
+- Blockers/Notes:
+  - Audit: UX mista IT/EN.
 
+---

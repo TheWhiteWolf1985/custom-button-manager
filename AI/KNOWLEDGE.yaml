@@ -301,3 +301,38 @@ changes_log:
     risks:
       - "I file JSON schema con BOM possono fallire su parser strict UTF-8; mantenere lettura `utf-8-sig` nei check locali."
 
+  - step_id: "AUDIT REPO (2026-02-17)"
+    summary: "Audit tecnico completo della repository con focus robustezza e reattivita' estensione VS Code."
+    commit: ""
+    files:
+      - ".temp/audit_completo.md"
+      - "AI/Knowledge.yaml"
+    commands:
+      - "Get-Content -Raw src/extension.ts"
+      - "Get-Content -Raw package.json"
+      - "Get-Content -Raw src/test/extension.test.ts"
+      - "Get-Content -Raw esbuild.js"
+      - "Get-Content -Raw .vscode-test.mjs"
+      - "npm run compile"
+      - "npm test"
+      - "rg -n \"retainContextWhenHidden|onDidReceiveMessage|getCategories\\(|postCategories\\(|JSON.stringify\\(categories\\)|categoriesEl.innerHTML|grid-template-columns\" src/extension.ts"
+    notes: "Audit salvato in `.temp/audit_completo.md` con sezioni: parti solide, criticita' prioritarie, impatto su reattivita' e piano incrementale."
+    risks:
+      - "Test automatici ancora non eseguibili in questa workstation per problema invocazione `Code.exe` nel test host."
+
+  - step_id: "STEP 001 (TASKS V2 - 2026-02-17)"
+    summary: "Baseline build/test registrata in runbook con esito riproducibile e failure attuale del test runner Windows."
+    commit: ""
+    files:
+      - "AI/AI_RUNBOOK.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm install"
+      - "npm run compile"
+      - "npm run lint"
+      - "npm test"
+    notes: "Nessuna modifica runtime dell'estensione; documentato solo stato comandi e troubleshooting minimo per errore `Code.exe`."
+    risks:
+      - "Finche' non viene corretto il runner, `npm test` resta non affidabile su Windows con path contenenti spazi."
+
