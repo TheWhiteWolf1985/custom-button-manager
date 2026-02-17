@@ -185,3 +185,18 @@ changes_log:
     notes: "Tutti i file chiave richiesti dallo step risultano presenti; nessuna creazione di file/cartelle."
     risks: []
 
+  - step_id: "STEP 002 (2026-02-17)"
+    summary: "Scansione repository completata con raccolta evidenze per tooling, comandi reali e documentazione."
+    commit: ""
+    files:
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "Get-ChildItem -Force"
+      - "Get-ChildItem -Recurse -File (...) | Select-Object -ExpandProperty FullName"
+      - "rg -n \"openapi|swagger|FastAPI|Uvicorn|SQLAlchemy|alembic|docker-compose|kubernetes|flutter|platformio|ble\" -S ."
+      - "Get-Content -Raw package.json"
+    notes: "EVIDENZE: package.json (scripts + contributes), package-lock.json (lockfile npm), README.md (setup/test/debug), CHANGELOG.md (storico release), esbuild.js (bundle), eslint.config.mjs (lint), src/extension.ts (entry/runtime), .vscode/launch.json (debug), .vscode-test.mjs (test host), AI/README.md (standard AI)."
+    risks:
+      - "La scansione file indicatori include risultati rumorosi da node_modules; per i prossimi cicli mantenere esclusione esplicita."
+

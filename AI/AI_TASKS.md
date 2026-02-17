@@ -28,7 +28,7 @@
 ---
 
 ## STEP 002 — Scansione repo: tooling, comandi reali, entrypoint, doc esistenti
-- Status: TODO
+- Status: DONE
 - Goal: Raccogliere segnali **certi** per compilare `RUNBOOK`, `METADATA`, `INVENTORY`, `PRD`, senza supposizioni.
 - Scope:
   - Root e cartelle principali della repo
@@ -46,6 +46,8 @@
   - Elenco indicatori tooling trovato (o vuoto) + riferimenti alle doc/API/schema/migrations se presenti.
 - Commit message:
   - "docs(ai): collect repo evidence for AI files"
+- What changed:
+  - Raccolte evidenze certe su tooling e documentazione presenti in repo (`package.json`, `package-lock.json`, `README.md`, `CHANGELOG.md`, `.vscode/launch.json`, `src/extension.ts`).
 
 ---
 
