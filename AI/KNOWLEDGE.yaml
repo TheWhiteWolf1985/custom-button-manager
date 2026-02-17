@@ -242,3 +242,19 @@ changes_log:
     notes: "Confermate convenzioni commit da storico recente; impostato `<<REQUIRED>>` su branch naming per mancanza policy formalizzata."
     risks: []
 
+  - step_id: "STEP 006 (2026-02-17)"
+    summary: "Validati `AI/AI_PROJECT.md` e `AI/AI_PRD.md` contro documentazione e sorgenti repository."
+    commit: ""
+    files:
+      - "AI/AI_PROJECT.md"
+      - "AI/AI_PRD.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "Get-Content -Raw README.md"
+      - "rg -n \"openapi|swagger|schema|migration|alembic|models|routes|endpoints\" -S ."
+      - "Get-Content -Raw AI/AI_PROJECT.md"
+      - "Get-Content -Raw AI/AI_PRD.md"
+    notes: "Nessuna API HTTP/OpenAPI o migrazione DB rilevata; i documenti restano aderenti a un'estensione VS Code locale."
+    risks: []
+

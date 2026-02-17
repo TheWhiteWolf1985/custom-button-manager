@@ -124,7 +124,7 @@
 ---
 
 ## STEP 006 — Compilazione completa: AI/AI_PROJECT.md + AI/AI_PRD.md
-- Status: TODO
+- Status: DONE
 - Goal: Compilare obiettivi/vincoli (PROJECT) e specifiche (PRD) usando doc esistenti nella repo.
 - Scope:
   - `AI/AI_PROJECT.md`
@@ -148,6 +148,8 @@
   - Nessuna “feature” o requisito inventato.
 - Commit message:
   - "docs(ai): compile project and prd"
+- What changed:
+  - Verificata coerenza di `AI/AI_PROJECT.md` e `AI/AI_PRD.md` con README/config/codebase corrente; nessun contenuto aggiuntivo necessario oltre alle evidenze già presenti.
 
 ---
 
