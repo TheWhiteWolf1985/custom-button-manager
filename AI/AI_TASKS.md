@@ -154,7 +154,7 @@
 ---
 
 ## STEP 007 — Normalizzazione: AI/DECISIONS.md + AI/KNOWLEDGE.yaml (tracciabilità + TODO)
-- Status: TODO
+- Status: DONE
 - Goal: Garantire tracciabilità (decisioni) e memoria esterna (knowledge) includendo evidenze, TODO e una entry “bootstrap”.
 - Scope:
   - `AI/DECISIONS.md`
@@ -178,6 +178,8 @@
   - DECISIONS coerente e non inventato.
 - Commit message:
   - "docs(ai): normalize decisions and knowledge"
+- What changed:
+  - Aggiornati `AI/DECISIONS.md` (ADR bootstrap) e `AI/KNOWLEDGE.yaml` con entry `bootstrap_ai_kit_from_repo`, TODO `<<REQUIRED>>` residui e nota fallback per validazione YAML senza PyYAML.
 
 ---
 

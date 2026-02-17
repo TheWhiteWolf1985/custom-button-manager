@@ -258,3 +258,32 @@ changes_log:
     notes: "Nessuna API HTTP/OpenAPI o migrazione DB rilevata; i documenti restano aderenti a un'estensione VS Code locale."
     risks: []
 
+  - step_id: "STEP 007 (2026-02-17)"
+    action: "bootstrap_ai_kit_from_repo"
+    summary: "Normalizzate decisioni e knowledge con tracciabilita' fonti, TODO residui e fallback validazione YAML."
+    commit: ""
+    files:
+      - "AI/DECISIONS.md"
+      - "AI/KNOWLEDGE.yaml"
+      - "AI/AI_TASKS.md"
+    commands:
+      - "python -c \"import yaml; yaml.safe_load(open('AI/KNOWLEDGE.yaml','r',encoding='utf-8'))\""
+      - "rg -n \"<<REQUIRED>>\" AI"
+    sources_used:
+      - "README.md"
+      - "package.json"
+      - "AI/AI_RUNBOOK.md"
+      - "AI/AI_CONVENTIONS.md"
+      - "AI/AI_PROJECT.md"
+      - "AI/AI_PRD.md"
+      - "AI/DECISIONS.md"
+      - "AI/AI_TASKS.md"
+    todo_required:
+      - "AI/AI_CONVENTIONS.md -> Branch naming policy documentata"
+      - "AI/AI_RUNBOOK.md -> Comandi Python"
+      - "AI/AI_RUNBOOK.md -> Comandi Docker/Compose"
+      - "AI/AI_RUNBOOK.md -> Target Makefile"
+    notes: "PyYAML non disponibile nell'ambiente corrente; validazione YAML effettuata con controllo manuale del formato e allineamento struttura `meta/entities/relations/changes_log`."
+    risks:
+      - "Finche' non e' disponibile un parser YAML locale, la validazione resta best-effort manuale."
+

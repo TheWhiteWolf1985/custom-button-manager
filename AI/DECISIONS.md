@@ -19,3 +19,13 @@
 - Consequences:
   - Verifiche CLI affidabili e ripetibili.
   - Necessita' di un controllo manuale aggiuntivo per scenari UI/host.
+
+## ADR 003
+- Date: 2026-02-17
+- Context: Durante il bootstrap AI restano aree non deducibili con certezza (branch policy, comandi Python/Docker/Makefile).
+- Decision: Mantenere placeholder `<<REQUIRED>>` nei documenti coinvolti e tracciare i TODO residui in `AI/KNOWLEDGE.yaml`.
+- Alternatives:
+  - Compilare comunque sezioni mancanti con convenzioni generiche non verificate.
+- Consequences:
+  - Nessuna informazione inventata nei file AI.
+  - Resta un backlog esplicito da completare quando la repository includera' policy/tooling aggiuntivo.
