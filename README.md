@@ -1,71 +1,114 @@
-# custom-command-sidebar README
+# custom-command-sidebar
 
-This is the README for your extension "custom-command-sidebar". After writing up a brief description, we recommend including the following sections.
+Estensione VS Code che aggiunge una sidebar `Commands` con pulsanti personalizzabili per eseguire comandi VS Code (anche con argomenti JSON).
 
-## Features
+## Cosa fa
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Mostra una view `Commands` nella Activity Bar.
+- Organizza i pulsanti in categorie (`Preferiti`, `Workspace`, `Github` di default).
+- Permette di aggiungere, modificare e rimuovere pulsanti dalla UI.
+- Salva la configurazione in `.vscode/settings.json` del workspace.
 
-For example if there is an image subfolder under your extension project workspace:
+## Prerequisiti ambiente
 
-\!\[feature X\]\(images/feature-x.png\)
+- `VS Code` (Engine estensione: `^1.107.0`)
+- `Node.js` 22 LTS consigliato
+- `npm` (incluso con Node.js)
+- `git` (opzionale, ma consigliato)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Verifica rapida:
 
-## Requirements
+```powershell
+node -v
+npm -v
+```
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## Setup rapido (sviluppo locale)
 
-## Extension Settings
+1. Clona/apri la repository in VS Code.
+2. Installa le dipendenze:
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+```powershell
+npm install
+```
 
-For example:
+3. Compila l'estensione:
 
-This extension contributes the following settings:
+```powershell
+npm run compile
+```
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+4. Avvia in debug:
+- Apri tab `Run and Debug`
+- Seleziona `Run Extension`
+- Premi `F5`
+- Si aprira' una nuova finestra `Extension Development Host` con l'estensione caricata
 
-## Known Issues
+## Comandi utili
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- Build completa: `npm run compile`
+- Watch (TS + esbuild): `npm run watch`
+- Typecheck: `npm run check-types`
+- Lint: `npm run lint`
+- Test estensione: `npm test`
+- Package produzione: `npm run package`
 
-## Release Notes
+## Configurazione estensione
 
-Users appreciate release notes as you update your extension.
+Impostazione principale:
 
-### 1.0.0
+- `myCommandSidebar.categories`: array di categorie con pulsanti.
 
-Initial release of ...
+Esempio da inserire in `.vscode/settings.json`:
 
-### 1.0.1
+```json
+{
+  "myCommandSidebar.categories": [
+    {
+      "id": "favorites",
+      "label": "Preferiti",
+      "buttons": [
+        {
+          "label": "Nuovo file",
+          "command": "workbench.action.files.newUntitledFile",
+          "icon": "new-file"
+        },
+        {
+          "label": "Apri terminale",
+          "command": "workbench.action.terminal.new",
+          "icon": "terminal"
+        }
+      ]
+    },
+    {
+      "id": "workspace",
+      "label": "Workspace",
+      "buttons": []
+    }
+  ]
+}
+```
 
-Fixed issue #.
+Schema pulsante:
 
-### 1.1.0
+- `label` (string, obbligatorio): testo del pulsante.
+- `command` (string, obbligatorio): command id VS Code da eseguire.
+- `icon` (string, opzionale): nome Codicon senza prefisso `codicon-`.
+- `args` (qualunque JSON, opzionale): argomenti passati al comando.
 
-Added features X, Y, and Z.
+## Note operative
 
----
+- Il salvataggio richiede una cartella workspace aperta (non funziona in finestra vuota).
+- Se in passato usavi la chiave legacy `myCommandSidebar.buttons`, viene migrata automaticamente in `Preferiti`.
 
-## Following extension guidelines
+## Troubleshooting
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- La sidebar non appare:
+  - verifica di aver avviato la finestra `Extension Development Host` con `F5`
+  - controlla che non ci siano errori nella `Debug Console`
+- I pulsanti non salvano:
+  - assicurati di avere un workspace folder aperto
+  - verifica i permessi di scrittura su `.vscode/settings.json`
+- Un comando fallisce:
+  - controlla che il `command` sia un command id valido
+  - se usi `args`, assicurati che sia JSON valido
