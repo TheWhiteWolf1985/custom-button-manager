@@ -64,6 +64,12 @@ entities:
     path: "src/extension.ts"
     notes: "Esegue command id con gestione args array/object/assenti."
 
+  - id: "state.categoriesCache"
+    type: "InMemoryState"
+    name: "CommandViewProvider.categoriesCache"
+    path: "src/extension.ts"
+    notes: "Cache in-memory delle categorie sincronizzata con workspace configuration."
+
   - id: "debug.launch.runExtension"
     type: "DebugConfig"
     name: "Run Extension"
@@ -126,6 +132,10 @@ relations:
   - from: "tests.sample"
     type: "depends_on"
     to: "func.executeButtonCommand"
+
+  - from: "runtime.extension.activate"
+    type: "depends_on"
+    to: "state.categoriesCache"
 
   - from: "debug.launch.runExtension"
     type: "runs"
@@ -429,4 +439,18 @@ changes_log:
     notes: "CSS webview aggiornato con `repeat(auto-fill, minmax(96px, 1fr))` senza cambiare logica runtime."
     risks:
       - "Verifica visuale resize sidebar ancora da eseguire manualmente in smoke."
+
+  - step_id: "STEP 006 (TASKS V2 - 2026-02-17)"
+    summary: "Aggiunta cache categorie lato provider per ridurre letture ripetute da configuration."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+    notes: "Cache `categoriesCache` aggiornata su resolve, save e change configuration; `getCategories()` ora usa clone da cache."
+    risks:
+      - "Se future modifiche mutano oggetti categorie fuori dai metodi provider, la coerenza cache puo' degradare."
 

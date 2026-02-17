@@ -137,7 +137,7 @@ Regole:
 ---
 
 ### STEP 006 - Cache categorie lato provider: meno letture settings ripetute
-- Status: TODO
+- Status: DONE
 - Goal: Ridurre roundtrip su configuration: mantenere stato in memoria e sync su change.
 - Scope: `src/extension.ts` (provider), eventuale listener `workspace.onDidChangeConfiguration`.
 - Changes:
@@ -155,6 +155,8 @@ Regole:
   - `perf(core): cache categories in provider and sync on configuration changes`
 - Blockers/Notes:
   - Audit: letture ripetute delle categorie in più flussi.
+- What changed:
+  - Introdotta cache `categoriesCache` nel provider in `src/extension.ts`, aggiornata su load/save e su `onDidChangeConfiguration`, con lettura clonata nelle hot path.
 
 ---
 

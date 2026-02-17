@@ -87,11 +87,13 @@ export function deactivate() {}
 class CommandViewProvider implements vscode.WebviewViewProvider {
 	private view?: vscode.WebviewView;
 	private configListener?: vscode.Disposable;
+	private categoriesCache?: CommandCategory[];
 
 	constructor(private readonly context: vscode.ExtensionContext) {}
 
 	public async resolveWebviewView(webviewView: vscode.WebviewView): Promise<void> {
 		this.view = webviewView;
+		this.categoriesCache = this.loadCategoriesFromConfig();
 		webviewView.webview.options = {
 			enableScripts: true,
 			localResourceRoots: [this.context.extensionUri],
@@ -101,6 +103,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 		this.configListener ??= vscode.workspace.onDidChangeConfiguration((event) => {
 			if (event.affectsConfiguration(`${CONFIG_SECTION}.${CONFIG_KEY}`) || event.affectsConfiguration(`${CONFIG_SECTION}.${LEGACY_KEY}`)) {
+				this.categoriesCache = this.loadCategoriesFromConfig();
 				this.postCategories();
 			}
 		});
@@ -266,6 +269,16 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	private getCategories(): CommandCategory[] {
+		if (!this.categoriesCache) {
+			this.categoriesCache = this.loadCategoriesFromConfig();
+		}
+		return this.categoriesCache.map((category) => ({
+			...category,
+			buttons: category.buttons.map((button) => ({ ...button })),
+		}));
+	}
+
+	private loadCategoriesFromConfig(): CommandCategory[] {
 		const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
 		const categories = config.get<CommandCategory[]>(CONFIG_KEY);
 		const legacyButtons = config.get<CommandButton[]>(LEGACY_KEY);
@@ -282,6 +295,10 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			await config.update(CONFIG_KEY, categories, vscode.ConfigurationTarget.Workspace);
 			// Clear legacy key to avoid fallback overriding new categories.
 			await config.update(LEGACY_KEY, undefined, vscode.ConfigurationTarget.Workspace);
+			this.categoriesCache = categories.map((category) => ({
+				...category,
+				buttons: category.buttons.map((button) => ({ ...button })),
+			}));
 		} catch (error) {
 			void vscode.window.showErrorMessage(`Failed to save buttons: ${String(error)}`);
 		}
