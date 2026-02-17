@@ -24,6 +24,48 @@ const DEFAULT_CATEGORIES: CommandCategory[] = [
 	{ id: 'github', label: 'Github', buttons: [] },
 ];
 
+export function resolveCategoriesFromConfig(
+	categories: CommandCategory[] | undefined,
+	legacyButtons: CommandButton[] | undefined,
+): CommandCategory[] {
+	if (Array.isArray(categories) && categories.length) {
+		return categories.map((c, idx) => ({
+			id: c.id || `cat-${idx}`,
+			label: c.label || `Categoria ${idx + 1}`,
+			buttons: Array.isArray(c.buttons) ? c.buttons : [],
+		}));
+	}
+
+	// Migration: legacy flat buttons array goes into "Preferiti"
+	if (Array.isArray(legacyButtons) && legacyButtons.length) {
+		return [
+			{ id: 'favorites', label: 'Preferiti', buttons: legacyButtons },
+			{ id: 'workspace', label: 'Workspace', buttons: [] },
+			{ id: 'github', label: 'Github', buttons: [] },
+		];
+	}
+
+	return DEFAULT_CATEGORIES.map((c) => ({ ...c, buttons: [...c.buttons] }));
+}
+
+export async function executeButtonCommand(
+	button: CommandButton,
+	executor: (command: string, ...args: unknown[]) => Promise<unknown> | PromiseLike<unknown>,
+): Promise<void> {
+	const args = button.args;
+	if (Array.isArray(args)) {
+		await executor(button.command, ...args);
+		return;
+	}
+
+	if (args !== undefined) {
+		await executor(button.command, args);
+		return;
+	}
+
+	await executor(button.command);
+}
+
 export function activate(context: vscode.ExtensionContext) {
 	const provider = new CommandViewProvider(context);
 
@@ -217,14 +259,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 		}
 
 		try {
-			const args = button.args;
-			if (Array.isArray(args)) {
-				await vscode.commands.executeCommand(button.command, ...args);
-			} else if (args !== undefined) {
-				await vscode.commands.executeCommand(button.command, args);
-			} else {
-				await vscode.commands.executeCommand(button.command);
-			}
+			await executeButtonCommand(button, vscode.commands.executeCommand);
 		} catch (error) {
 			void vscode.window.showErrorMessage(`Failed to run "${button.command}": ${String(error)}`);
 		}
@@ -233,26 +268,8 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 	private getCategories(): CommandCategory[] {
 		const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
 		const categories = config.get<CommandCategory[]>(CONFIG_KEY);
-
-		if (Array.isArray(categories) && categories.length) {
-			return categories.map((c, idx) => ({
-				id: c.id || `cat-${idx}`,
-				label: c.label || `Categoria ${idx + 1}`,
-				buttons: Array.isArray(c.buttons) ? c.buttons : [],
-			}));
-		}
-
-		// Migration: legacy flat buttons array goes into "Preferiti"
 		const legacyButtons = config.get<CommandButton[]>(LEGACY_KEY);
-		if (Array.isArray(legacyButtons) && legacyButtons.length) {
-			return [
-				{ id: 'favorites', label: 'Preferiti', buttons: legacyButtons },
-				{ id: 'workspace', label: 'Workspace', buttons: [] },
-				{ id: 'github', label: 'Github', buttons: [] },
-			];
-		}
-
-		return DEFAULT_CATEGORIES.map((c) => ({ ...c, buttons: [...c.buttons] }));
+		return resolveCategoriesFromConfig(categories, legacyButtons);
 	}
 
 	private async saveCategories(categories: CommandCategory[]): Promise<void> {

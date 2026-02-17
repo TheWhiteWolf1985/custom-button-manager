@@ -62,7 +62,7 @@ Regole:
 ---
 
 ### STEP 003 - Test minimi reali: categorie, migrazione legacy, execute args
-- Status: TODO
+- Status: DONE
 - Goal: Aggiungere una copertura test “minima ma vera” sui flussi core.
 - Scope: `src/test/extension.test.ts`, eventuali file nuovi in `src/test/`, piccoli refactor testability in `src/extension.ts` (solo se necessario).
 - Changes:
@@ -84,6 +84,8 @@ Regole:
   - `test(core): add minimal integration tests for categories migration and command execution`
 - Blockers/Notes:
   - Audit: suite attuale quasi solo di esempio, nessun test sul workflow reale.
+- What changed:
+  - Aggiunti 3 test reali in `src/test/extension.test.ts` e introdotte funzioni pure esportate (`resolveCategoriesFromConfig`, `executeButtonCommand`) in `src/extension.ts` per coprire categorie/migrazione/args.
 
 ---
 

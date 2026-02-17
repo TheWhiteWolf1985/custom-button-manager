@@ -52,6 +52,18 @@ entities:
     path: "scripts/run-vscode-tests.mjs"
     notes: "Runner test locale che avvia VS Code con shell=false per evitare errori su path Windows con spazi."
 
+  - id: "func.resolveCategoriesFromConfig"
+    type: "Function"
+    name: "resolveCategoriesFromConfig"
+    path: "src/extension.ts"
+    notes: "Normalizza categorie da settings e gestisce fallback/migrazione legacy."
+
+  - id: "func.executeButtonCommand"
+    type: "Function"
+    name: "executeButtonCommand"
+    path: "src/extension.ts"
+    notes: "Esegue command id con gestione args array/object/assenti."
+
   - id: "debug.launch.runExtension"
     type: "DebugConfig"
     name: "Run Extension"
@@ -98,6 +110,22 @@ relations:
   - from: "ext.custom-command-sidebar"
     type: "depends_on"
     to: "build.test.runner.local"
+
+  - from: "runtime.extension.activate"
+    type: "depends_on"
+    to: "func.resolveCategoriesFromConfig"
+
+  - from: "runtime.extension.activate"
+    type: "depends_on"
+    to: "func.executeButtonCommand"
+
+  - from: "tests.sample"
+    type: "depends_on"
+    to: "func.resolveCategoriesFromConfig"
+
+  - from: "tests.sample"
+    type: "depends_on"
+    to: "func.executeButtonCommand"
 
   - from: "debug.launch.runExtension"
     type: "runs"
@@ -359,4 +387,18 @@ changes_log:
     notes: "Lo script `test` ora usa `node scripts/run-vscode-tests.mjs`, con fallback su `VSCODE_EXECUTABLE_PATH` e messaggi errore piu' chiari."
     risks:
       - "Il runner dipende ancora dalla disponibilita' locale di VS Code test host e da ambiente GUI."
+
+  - step_id: "STEP 003 (TASKS V2 - 2026-02-17)"
+    summary: "Introdotta copertura test minima sui flussi core: categorie, migrazione legacy, execute args."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "src/test/extension.test.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm test"
+    notes: "Aggiunte funzioni pure per testabilita' senza modificare UX runtime; nuovi test verdi nel test host."
+    risks:
+      - "Le interazioni DOM webview restano coperte solo da smoke manuale, non da test automatici."
 
