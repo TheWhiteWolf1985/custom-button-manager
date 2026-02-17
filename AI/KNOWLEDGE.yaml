@@ -46,6 +46,12 @@ entities:
     path: "esbuild.js"
     notes: "Bundle CJS in `dist/extension.js` con external `vscode`."
 
+  - id: "build.test.runner.local"
+    type: "BuildScript"
+    name: "Local VS Code test runner"
+    path: "scripts/run-vscode-tests.mjs"
+    notes: "Runner test locale che avvia VS Code con shell=false per evitare errori su path Windows con spazi."
+
   - id: "debug.launch.runExtension"
     type: "DebugConfig"
     name: "Run Extension"
@@ -88,6 +94,10 @@ relations:
   - from: "build.esbuild"
     type: "bundles"
     to: "runtime.extension.activate"
+
+  - from: "ext.custom-command-sidebar"
+    type: "depends_on"
+    to: "build.test.runner.local"
 
   - from: "debug.launch.runExtension"
     type: "runs"
@@ -335,4 +345,18 @@ changes_log:
     notes: "Nessuna modifica runtime dell'estensione; documentato solo stato comandi e troubleshooting minimo per errore `Code.exe`."
     risks:
       - "Finche' non viene corretto il runner, `npm test` resta non affidabile su Windows con path contenenti spazi."
+
+  - step_id: "STEP 002 (TASKS V2 - 2026-02-17)"
+    summary: "Fix test runner Windows: introdotto launcher locale senza shell per path con spazi."
+    commit: ""
+    files:
+      - "scripts/run-vscode-tests.mjs"
+      - "package.json"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm test"
+    notes: "Lo script `test` ora usa `node scripts/run-vscode-tests.mjs`, con fallback su `VSCODE_EXECUTABLE_PATH` e messaggi errore piu' chiari."
+    risks:
+      - "Il runner dipende ancora dalla disponibilita' locale di VS Code test host e da ambiente GUI."
 

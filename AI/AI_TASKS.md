@@ -36,7 +36,7 @@ Regole:
 ---
 
 ### STEP 002 - Fix test runner: `npm test` deve funzionare su Windows (path con spazi)
-- Status: TODO
+- Status: DONE
 - Goal: Rendere eseguibile `npm test` in ambiente Windows anche con workspace path contenenti spazi.
 - Scope: `.vscode-test.mjs`, `package.json` (script test), eventuale utilità locale in `scripts/` se necessaria.
 - Changes:
@@ -56,6 +56,8 @@ Regole:
   - `fix(test): make extension test runner work on Windows paths with spaces`
 - Blockers/Notes:
   - Audit evidenzia KO attuale per `Code.exe` non riconosciuta in `.vscode-test` su path con spazi.
+- What changed:
+  - Aggiunto runner locale `scripts/run-vscode-tests.mjs` con avvio VS Code test host via `spawn(..., shell: false)` e aggiornato script `test` in `package.json`.
 
 ---
 
