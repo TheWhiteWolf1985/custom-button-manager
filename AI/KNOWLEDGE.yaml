@@ -200,3 +200,16 @@ changes_log:
     risks:
       - "La scansione file indicatori include risultati rumorosi da node_modules; per i prossimi cicli mantenere esclusione esplicita."
 
+  - step_id: "STEP 003 (2026-02-17)"
+    summary: "Compilato `AI/METADATA.yaml` con URL repository da remote Git e metadati verificati."
+    commit: ""
+    files:
+      - "AI/METADATA.yaml"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "git remote -v"
+      - "git rev-parse --show-toplevel"
+    notes: "Impostato `repo_url` con valore certo da `origin`; gli altri campi risultano coerenti con evidenze locali."
+    risks: []
+

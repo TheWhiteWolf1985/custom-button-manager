@@ -1,6 +1,6 @@
 project_name: "custom-command-sidebar"
 owner: "J. Zanella"
-repo_url: ""
+repo_url: "git@forgejo-user:J.Zanella/VSCode-custom-button.git"
 ai_kit_version: "1.0.0"
 created_at: "2026-02-17"
 updated_at: "2026-02-17"

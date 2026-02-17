@@ -52,7 +52,7 @@
 ---
 
 ## STEP 003 — Compilazione completa: AI/METADATA.yaml
-- Status: TODO
+- Status: DONE
 - Goal: Compilare `AI/METADATA.yaml` usando solo dati certi (repo name, remote se presente, stack dedotto da indicatori).
 - Scope: `AI/METADATA.yaml`
 - Changes:
@@ -68,6 +68,8 @@
   - `AI/METADATA.yaml` compilato con info certe + placeholders dove serve.
 - Commit message:
   - "docs(ai): compile metadata"
+- What changed:
+  - Compilato `repo_url` da `git remote -v` e confermati `project_name`/`stack_summary` su evidenze di repository.
 
 ---
 
