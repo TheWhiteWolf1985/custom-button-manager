@@ -82,6 +82,12 @@ entities:
     path: "AI/CHECKLISTS/SMOKE.md"
     notes: "Checklist manuale per verifiche rapide post-change su flussi critici estensione."
 
+  - id: "config.gitignore"
+    type: "Configuration"
+    name: ".gitignore rules"
+    path: ".gitignore"
+    notes: "Regole ignore per artefatti build/test locali."
+
   - id: "debug.launch.runExtension"
     type: "DebugConfig"
     name: "Run Extension"
@@ -160,6 +166,10 @@ relations:
   - from: "doc.smoke.checklist"
     type: "documents"
     to: "ext.custom-command-sidebar"
+
+  - from: "build.test.runner.local"
+    type: "depends_on"
+    to: "config.gitignore"
 
   - from: "debug.launch.runExtension"
     type: "runs"
@@ -521,4 +531,20 @@ changes_log:
     notes: "Supportati `VSCODE_TEST_USER_DATA_DIR` e `VSCODE_TEST_EXTENSIONS_DIR`; output filtrato per non riportare il warning `Error mutex already exists`."
     risks:
       - "Il warning e' filtrato in output ma non elimina una possibile collisione reale se processi VS Code concorrenti contendono risorse locali."
+
+  - step_id: "STEP 010 (TASKS V3 - 2026-02-17)"
+    summary: "Gestione artefatti test pulita: cache fallback spostata in temp OS e cleanup automatico."
+    commit: ""
+    files:
+      - "scripts/run-vscode-tests.mjs"
+      - ".gitignore"
+      - "AI/AI_RUNBOOK.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm test"
+      - "git status --porcelain"
+    notes: "Aggiunte regole ignore per artefatti cache; introdotto flag `KEEP_VSCODE_TEST_ARTIFACTS=1` per mantenere output locali in debug."
+    risks:
+      - "Cleanup best-effort: in caso di kill brutale processo, directory temp potrebbero restare in `%TEMP%`."
 

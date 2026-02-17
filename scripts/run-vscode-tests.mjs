@@ -46,6 +46,17 @@ function forwardWithoutMutexNoise(stream, writer) {
 	});
 }
 
+function safeRemove(targetPath) {
+	if (!targetPath) {
+		return;
+	}
+	try {
+		fs.rmSync(targetPath, { recursive: true, force: true });
+	} catch {
+		// cleanup best-effort
+	}
+}
+
 async function main() {
 	const explicitExecutable = process.env.VSCODE_EXECUTABLE_PATH?.trim();
 	let resolvedExecutable = explicitExecutable;
@@ -71,10 +82,7 @@ async function main() {
 
 	if (!resolvedExecutable || !fs.existsSync(resolvedExecutable)) {
 		// Se la cache locale e' corrotta/incompleta, forza un download pulito in una cache separata.
-		const freshCachePath = path.resolve(
-			repoRoot,
-			'.vscode-test-fresh-cache',
-		);
+		const freshCachePath = path.join(os.tmpdir(), 'vscode-test-fresh-cache');
 		resolvedExecutable = await downloadAndUnzipVSCode({
 			version: 'stable',
 			cachePath: freshCachePath,
@@ -122,10 +130,11 @@ async function main() {
 	}
 
 	const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vscode-ext-test-'));
-	const userDataDir = process.env.VSCODE_TEST_USER_DATA_DIR?.trim()
-		|| path.join(tempRoot, 'user-data');
-	const extensionsDir = process.env.VSCODE_TEST_EXTENSIONS_DIR?.trim()
-		|| path.join(tempRoot, 'extensions');
+	const keepArtifacts = process.env.KEEP_VSCODE_TEST_ARTIFACTS === '1';
+	const customUserDataDir = process.env.VSCODE_TEST_USER_DATA_DIR?.trim();
+	const customExtensionsDir = process.env.VSCODE_TEST_EXTENSIONS_DIR?.trim();
+	const userDataDir = customUserDataDir || path.join(tempRoot, 'user-data');
+	const extensionsDir = customExtensionsDir || path.join(tempRoot, 'extensions');
 	fs.mkdirSync(userDataDir, { recursive: true });
 	fs.mkdirSync(extensionsDir, { recursive: true });
 
@@ -163,10 +172,28 @@ async function main() {
 
 	child.on('error', (error) => {
 		console.error(`Errore avvio test host: ${String(error)}`);
+		if (!keepArtifacts) {
+			if (!customUserDataDir) {
+				safeRemove(userDataDir);
+			}
+			if (!customExtensionsDir) {
+				safeRemove(extensionsDir);
+			}
+			safeRemove(tempRoot);
+		}
 		process.exit(1);
 	});
 
 	child.on('close', (code) => {
+		if (!keepArtifacts) {
+			if (!customUserDataDir) {
+				safeRemove(userDataDir);
+			}
+			if (!customExtensionsDir) {
+				safeRemove(extensionsDir);
+			}
+			safeRemove(tempRoot);
+		}
 		process.exit(code ?? 1);
 	});
 }

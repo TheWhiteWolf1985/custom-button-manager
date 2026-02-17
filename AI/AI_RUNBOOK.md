@@ -79,3 +79,5 @@ Nota: i test usano `@vscode/test-cli` e richiedono ambiente GUI/Extension Test H
 - VSCODE_TEST_EXTENSIONS_DIR: override cartella estensioni del test host.
 - Il runner usa profili isolati e filtra il warning Error mutex already exists dall'output.
 
+- KEEP_VSCODE_TEST_ARTIFACTS=1: mantiene gli artefatti temporanei del runner per debug (default cleanup automatico).
+- Cache fallback test host: in temp OS (non nella repo).

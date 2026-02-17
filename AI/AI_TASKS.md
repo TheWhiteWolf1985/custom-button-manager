@@ -38,7 +38,7 @@ Regole:
 ---
 
 ## STEP 010 - Gestione pulita cache test: ignora e/o sposta `/.vscode-test-fresh-cache/`
-- Status: TODO
+- Status: DONE
 - Goal: evitare cartelle cache “random” e mantenere repo pulita.
 - Scope:
   - `.gitignore`
@@ -61,6 +61,8 @@ Regole:
   - La cache non viene più creata in posizione “misteriosa”: o è in temp oppure è ignorata in modo esplicito.
 - Commit message:
   - `chore(test): ignore and manage vscode test cache artifacts`
+- What changed:
+  - Aggiornati `scripts/run-vscode-tests.mjs` e `.gitignore` per spostare cache fallback in temp OS, evitare artefatti in repo e introdurre cleanup automatico con override `KEEP_VSCODE_TEST_ARTIFACTS=1`.
 
 ---
 
