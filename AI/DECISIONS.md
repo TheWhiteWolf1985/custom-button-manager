@@ -29,3 +29,13 @@
 - Consequences:
   - Nessuna informazione inventata nei file AI.
   - Resta un backlog esplicito da completare quando la repository includera' policy/tooling aggiuntivo.
+
+## ADR 004
+- Date: 2026-02-17
+- Context: La UX mostrava testi misti IT/EN in prompt, validazioni e menu webview.
+- Decision: Uniformare i messaggi utente in italiano, mantenendo invariati i command id tecnici.
+- Alternatives:
+  - Lasciare stringhe miste per evitare ritocchi testuali.
+- Consequences:
+  - Esperienza utente piu' coerente nel flusso add/edit/delete/execute.
+  - Richiede aggiornare eventuali documentazioni future che citano messaggi runtime letterali.

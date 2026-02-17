@@ -77,7 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
 			await provider.promptAddOrEdit();
 		}),
 		vscode.commands.registerCommand('custom-command-sidebar.helloWorld', () => {
-			vscode.window.showInformationMessage('Hello World from Custom command sidebar!');
+			vscode.window.showInformationMessage('Ciao dal custom-command-sidebar!');
 		}),
 	);
 }
@@ -153,27 +153,27 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 		}
 
 		const label = await vscode.window.showInputBox({
-			prompt: 'Label',
+			prompt: 'Etichetta pulsante',
 			value: existing?.label ?? '',
 			ignoreFocusOut: true,
-			validateInput: (value) => (!value.trim() ? 'Label is required' : undefined),
+			validateInput: (value) => (!value.trim() ? 'L\'etichetta è obbligatoria' : undefined),
 		});
 		if (!label) {
 			return;
 		}
 
 		const command = await vscode.window.showInputBox({
-			prompt: 'Command id (for example: workbench.action.files.newUntitledFile)',
+			prompt: 'Command id (esempio: workbench.action.files.newUntitledFile)',
 			value: existing?.command ?? '',
 			ignoreFocusOut: true,
-			validateInput: (value) => (!value.trim() ? 'Command id is required' : undefined),
+			validateInput: (value) => (!value.trim() ? 'Il command id è obbligatorio' : undefined),
 		});
 		if (!command) {
 			return;
 		}
 
 		const icon = await vscode.window.showInputBox({
-			prompt: 'Icon (Codicon name, e.g. play, rocket, gear). Leave empty for default.',
+			prompt: 'Icona (nome Codicon, ad es. play, rocket, gear). Lascia vuoto per il default.',
 			value: existing?.icon ?? '',
 			placeHolder: 'rocket',
 			ignoreFocusOut: true,
@@ -182,7 +182,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 		const argsRaw = await vscode.window.showInputBox({
 			prompt: 'Args (JSON, facoltativo)',
 			value: existing?.args !== undefined ? JSON.stringify(existing.args) : '',
-			placeHolder: '["--flag"] or {"key":"value"}',
+			placeHolder: '["--flag"] oppure {"key":"value"}',
 			ignoreFocusOut: true,
 		});
 
@@ -191,7 +191,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			try {
 				parsedArgs = JSON.parse(argsRaw);
 			} catch (error) {
-				void vscode.window.showErrorMessage('Args must be valid JSON.');
+				void vscode.window.showErrorMessage('Gli argomenti devono essere JSON valido.');
 				return;
 			}
 		} else if (argsRaw !== undefined && argsRaw.trim() === '') {
@@ -228,20 +228,20 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			return;
 		}
 
-		const picked = await vscode.window.showQuickPick(['Edit', 'Delete'], {
+		const picked = await vscode.window.showQuickPick(['Modifica', 'Elimina'], {
 			placeHolder: `"${button.label}"`,
 			ignoreFocusOut: true,
 		});
 
-		if (picked === 'Edit') {
+		if (picked === 'Modifica') {
 			await this.promptAddOrEdit(button, categoryIndex, buttonIndex);
-		} else if (picked === 'Delete') {
+		} else if (picked === 'Elimina') {
 			const confirm = await vscode.window.showWarningMessage(
-				`Remove "${button.label}"?`,
+				`Vuoi rimuovere "${button.label}"?`,
 				{ modal: true },
-				'Delete',
+				'Elimina',
 			);
-			if (confirm === 'Delete') {
+			if (confirm === 'Elimina') {
 				const nextCategories = this.getCategories();
 				const target = nextCategories[categoryIndex];
 				if (!target) {
@@ -265,7 +265,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 		try {
 			await executeButtonCommand(button, vscode.commands.executeCommand);
 		} catch (error) {
-			void vscode.window.showErrorMessage(`Failed to run "${button.command}": ${String(error)}`);
+			void vscode.window.showErrorMessage(`Esecuzione di "${button.command}" non riuscita: ${String(error)}`);
 		}
 	}
 
@@ -288,7 +288,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 	private async saveCategories(categories: CommandCategory[]): Promise<void> {
 		if (!vscode.workspace.workspaceFolders?.length) {
-			void vscode.window.showErrorMessage('Open a workspace folder to save Commands buttons (workspace settings are required).');
+			void vscode.window.showErrorMessage('Apri una cartella workspace per salvare i pulsanti Commands (richieste impostazioni workspace).');
 			return;
 		}
 		const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
@@ -301,7 +301,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 				buttons: category.buttons.map((button) => ({ ...button })),
 			}));
 		} catch (error) {
-			void vscode.window.showErrorMessage(`Failed to save buttons: ${String(error)}`);
+			void vscode.window.showErrorMessage(`Salvataggio pulsanti non riuscito: ${String(error)}`);
 		}
 	}
 
@@ -541,7 +541,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 						const menu = document.createElement('button');
 						menu.className = 'menu-btn';
 						menu.textContent = '⋯';
-						menu.title = 'Edit or delete';
+						menu.title = 'Modifica o elimina';
 						menu.addEventListener('click', (event) => {
 							event.stopPropagation();
 							vscode.postMessage({ type: 'menu', categoryIndex: catIndex, buttonIndex });

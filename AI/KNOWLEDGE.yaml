@@ -76,6 +76,12 @@ entities:
     path: "src/extension.ts"
     notes: "Messaggio iniziale `ready` inviato dalla webview per bootstrap dati via postMessage."
 
+  - id: "doc.smoke.checklist"
+    type: "Documentation"
+    name: "Smoke checklist"
+    path: "AI/CHECKLISTS/SMOKE.md"
+    notes: "Checklist manuale per verifiche rapide post-change su flussi critici estensione."
+
   - id: "debug.launch.runExtension"
     type: "DebugConfig"
     name: "Run Extension"
@@ -150,6 +156,10 @@ relations:
   - from: "runtime.extension.activate"
     type: "listens_event"
     to: "event.webview.ready"
+
+  - from: "doc.smoke.checklist"
+    type: "documents"
+    to: "ext.custom-command-sidebar"
 
   - from: "debug.launch.runExtension"
     type: "runs"
@@ -481,4 +491,20 @@ changes_log:
     notes: "Il payload categorie non viene piu' serializzato inline nello script HTML; bootstrap iniziale tramite evento `ready` + `postMessage`."
     risks:
       - "Se il messaggio `ready` non arriva, la webview resta vuota: mantenere smoke manuale all'avvio."
+
+  - step_id: "STEP 008 (TASKS V2 - 2026-02-17)"
+    summary: "Uniformata UX in italiano e completato cleanup finale artefatti AI."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "AI/CHECKLISTS/SMOKE.md"
+      - "AI/DECISIONS.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+    notes: "Messaggi utente e menu webview ora coerenti in italiano; checklist smoke resa esplicita sui due flussi critici richiesti."
+    risks:
+      - "Persistono log non bloccanti `Error mutex already exists` durante i test, pur con esito test verde."
 

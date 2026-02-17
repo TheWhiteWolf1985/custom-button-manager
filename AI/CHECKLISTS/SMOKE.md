@@ -8,6 +8,6 @@ Checklist smoke post-change:
 - [ ] Build principale eseguibile o marcata N/A.
 - [ ] Test rapidi principali eseguibili o marcati N/A.
 - [ ] Log base senza errori inattesi al boot.
-- [ ] Flusso critico 1 verificato manualmente.
-- [ ] Flusso critico 2 verificato manualmente.
+- [ ] Flusso critico 1 (add/edit/delete pulsante) verificato manualmente.
+- [ ] Flusso critico 2 (execute comando con args array/object/assenti) verificato manualmente.
 - [ ] Aggiornati `AI_TASKS.md` e `KNOWLEDGE.yaml`.

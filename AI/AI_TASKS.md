@@ -184,7 +184,7 @@ Regole:
 ---
 
 ### STEP 008 - Coerenza UX: uniformare lingua messaggi (IT o EN) + cleanup finale
-- Status: TODO
+- Status: DONE
 - Goal: Rendere i messaggi utente coerenti e chiudere con audit “no diff”.
 - Scope: `src/extension.ts` (stringhe UX), `AI/KNOWLEDGE.yaml`, `AI/DECISIONS.md`, `AI/CHECKLISTS/SMOKE.md`.
 - Changes:
@@ -204,5 +204,7 @@ Regole:
   - `chore(ux): unify user-facing messages and finalize ai audit artifacts`
 - Blockers/Notes:
   - Audit: UX mista IT/EN.
+- What changed:
+  - Uniformata in italiano la messaggistica utente in `src/extension.ts`, aggiornata checklist `AI/CHECKLISTS/SMOKE.md` sui due flussi critici e aggiunta ADR dedicata in `AI/DECISIONS.md`.
 
 ---
