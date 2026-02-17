@@ -90,7 +90,7 @@ Regole:
 ---
 
 ### STEP 004 - Reattività webview: evitare full re-render quando cambia poco
-- Status: TODO
+- Status: DONE
 - Goal: Ridurre lavoro DOM: non ricostruire tutto ad ogni update se non necessario.
 - Scope: `src/extension.ts` (webview render), eventuale helper JS inlined (resta offline).
 - Changes:
@@ -109,6 +109,8 @@ Regole:
   - `perf(webview): reduce full redraws by patching category DOM updates`
 - Blockers/Notes:
   - Audit: re-render completo ad ogni update, può degradare con molti pulsanti.
+- What changed:
+  - Aggiornata la logica render webview in `src/extension.ts` con patch incrementale per categoria (cache `sectionByCategoryId` + firma stato) evitando `categoriesEl.innerHTML = ''` ad ogni update.
 
 ---
 

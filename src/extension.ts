@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+﻿import * as vscode from 'vscode';
 
 type CommandButton = {
 	label: string;
@@ -456,16 +456,10 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 		const categoriesEl = document.getElementById('categories');
 		const emptyEl = document.getElementById('empty');
 
-		function render() {
-			categoriesEl.innerHTML = '';
-			const hasButtons = categories.some(c => c.buttons && c.buttons.length);
-			if (!hasButtons) {
-				emptyEl.hidden = false;
-			} else {
-				emptyEl.hidden = true;
-			}
+			const sectionByCategoryId = new Map();
+			const sectionState = new Map();
 
-			categories.forEach((cat, catIndex) => {
+			function buildCategorySection(cat, catIndex) {
 				const section = document.createElement('div');
 				section.className = 'category';
 
@@ -485,7 +479,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 				const count = document.createElement('span');
 				count.style.opacity = '0.7';
-				count.textContent = cat.buttons?.length ? \`(\${cat.buttons.length})\` : '(0)';
+					count.textContent = cat.buttons?.length ? \`(\${cat.buttons.length})\` : '(0)';
 
 				const headerAdd = document.createElement('button');
 				headerAdd.className = 'button';
@@ -558,10 +552,48 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 				}
 
 				section.append(header, body);
-				categoriesEl.append(section);
-			});
-		}
+				return section;
+			}
 
+			function render() {
+				const hasButtons = categories.some(c => c.buttons && c.buttons.length);
+				emptyEl.hidden = hasButtons;
+
+				const activeCategoryIds = new Set();
+				categories.forEach((cat, catIndex) => {
+						const safeId = cat.id || \`cat-\${catIndex}\`;
+					const signature = JSON.stringify({
+						label: cat.label || 'Categoria',
+						buttons: Array.isArray(cat.buttons) ? cat.buttons : [],
+						collapsed: collapsed.get(safeId) === true,
+						index: catIndex,
+					});
+
+					let section = sectionByCategoryId.get(safeId);
+					const previousSignature = sectionState.get(safeId);
+					if (!section || previousSignature !== signature) {
+						const nextSection = buildCategorySection({ ...cat, id: safeId }, catIndex);
+						if (section && section.parentElement === categoriesEl) {
+							categoriesEl.replaceChild(nextSection, section);
+						}
+						section = nextSection;
+						sectionByCategoryId.set(safeId, section);
+						sectionState.set(safeId, signature);
+					}
+
+					categoriesEl.append(section);
+					activeCategoryIds.add(safeId);
+				});
+
+				for (const [categoryId, section] of sectionByCategoryId.entries()) {
+					if (!activeCategoryIds.has(categoryId)) {
+						section.remove();
+						sectionByCategoryId.delete(categoryId);
+						sectionState.delete(categoryId);
+						collapsed.delete(categoryId);
+					}
+				}
+			}
 		window.addEventListener('message', (event) => {
 			const { type, categories: updated } = event.data;
 			if (type === 'categories') {

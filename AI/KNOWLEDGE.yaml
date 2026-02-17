@@ -402,3 +402,17 @@ changes_log:
     risks:
       - "Le interazioni DOM webview restano coperte solo da smoke manuale, non da test automatici."
 
+  - step_id: "STEP 004 (TASKS V2 - 2026-02-17)"
+    summary: "Ottimizzata la reattivita' webview evitando full redraw su ogni update."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+    notes: "Render ora incrementale per categoria con cache nodi e rimozione selettiva categorie stale; mantenuta UX esistente."
+    risks:
+      - "Manca ancora smoke manuale visivo su flicker in Extension Development Host."
+
