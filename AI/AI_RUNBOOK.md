@@ -82,3 +82,4 @@ Nota: i test usano `@vscode/test-cli` e richiedono ambiente GUI/Extension Test H
 
 - KEEP_VSCODE_TEST_ARTIFACTS=1: mantiene gli artefatti temporanei del runner per debug (default cleanup automatico).
 - Cache fallback test host: in temp OS (non nella repo).
+- Garbage-collection temp: all'avvio vengono rimossi i folder `%TEMP%` con prefisso `forgejo-vscode-test-host-` piu' vecchi di 72 ore.

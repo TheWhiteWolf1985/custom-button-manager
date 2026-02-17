@@ -40,7 +40,7 @@ Regole:
 ---
 
 ## STEP 013 — Garbage-collection di `%TEMP%` per artefatti test host (prefix-based + retention)
-- Status: TODO
+- Status: DONE
 - Goal: anche se un processo viene killato, al run successivo vengono ripulite cartelle temp vecchie lasciate dai test.
 - Scope:
   - `scripts/run-vscode-tests.mjs`
@@ -63,6 +63,8 @@ Regole:
   - Repo resta pulita (nessun nuovo file non ignorato dopo `npm test`).
 - Commit message:
   - `chore(test): add temp artifact garbage-collection for vscode test host`
+- What changed:
+  - Aggiornato `scripts/run-vscode-tests.mjs` introducendo prefisso temp `forgejo-vscode-test-host-`, garbage-collection all'avvio per cartelle piu' vecchie di 72h in `os.tmpdir()` e mantenimento del cleanup best-effort/fallback con `KEEP_VSCODE_TEST_ARTIFACTS=1`; documentata retention nel runbook.
 
 ---
 

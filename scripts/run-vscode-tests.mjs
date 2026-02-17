@@ -76,7 +76,38 @@ function safeRemove(targetPath) {
 	}
 }
 
+function gcOldTempArtifacts(tempDir, prefix, maxAgeMs) {
+	const now = Date.now();
+	let entries = [];
+	try {
+		entries = fs.readdirSync(tempDir, { withFileTypes: true });
+	} catch {
+		return;
+	}
+
+	for (const entry of entries) {
+		if (!entry.isDirectory() || !entry.name.startsWith(prefix)) {
+			continue;
+		}
+		const fullPath = path.join(tempDir, entry.name);
+		let stats;
+		try {
+			stats = fs.statSync(fullPath);
+		} catch {
+			continue;
+		}
+		if (now - stats.mtimeMs > maxAgeMs) {
+			safeRemove(fullPath);
+		}
+	}
+}
+
 async function main() {
+	const tempArtifactPrefix = 'forgejo-vscode-test-host-';
+	const retentionHours = 72;
+	const retentionMs = retentionHours * 60 * 60 * 1000;
+	gcOldTempArtifacts(os.tmpdir(), tempArtifactPrefix, retentionMs);
+
 	const explicitExecutable = process.env.VSCODE_EXECUTABLE_PATH?.trim();
 	let resolvedExecutable = explicitExecutable;
 
@@ -148,7 +179,12 @@ async function main() {
 		process.exit(1);
 	}
 
-	const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vscode-ext-test-'));
+	const tempRoot = fs.mkdtempSync(
+		path.join(
+			os.tmpdir(),
+			`${tempArtifactPrefix}${Date.now()}-${process.pid}-`,
+		),
+	);
 	const keepArtifacts = process.env.KEEP_VSCODE_TEST_ARTIFACTS === '1';
 	const customUserDataDir = process.env.VSCODE_TEST_USER_DATA_DIR?.trim();
 	const customExtensionsDir = process.env.VSCODE_TEST_EXTENSIONS_DIR?.trim();

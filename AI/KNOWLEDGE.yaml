@@ -578,3 +578,19 @@ changes_log:
     risks:
       - "La normalizzazione avviene per pattern testuale specifico (`at id.S`); eventuali varianti future dello stack richiederanno aggiornamento pattern."
 
+  - step_id: "STEP 013 (TASKS - 2026-02-17)"
+    summary: "Aggiunta garbage-collection per artefatti test host in `%TEMP%` con retention."
+    commit: ""
+    files:
+      - "scripts/run-vscode-tests.mjs"
+      - "AI/AI_RUNBOOK.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+      - "git status --porcelain"
+    notes: "Il runner usa prefisso `forgejo-vscode-test-host-` e pulisce all'avvio le cartelle vecchie di oltre 72 ore; cleanup fine run invariato con bypass via `KEEP_VSCODE_TEST_ARTIFACTS=1`."
+    risks:
+      - "La retention e' fissa a 72h nel runner; se serve flessibilita' operativa va introdotta una configurazione esplicita."
+
