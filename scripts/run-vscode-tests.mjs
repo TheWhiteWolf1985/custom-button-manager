@@ -30,20 +30,39 @@ function collectTestFiles(dir) {
 	return results;
 }
 
-function forwardWithoutMutexNoise(stream, writer) {
+function captureStream(stream, collector) {
 	stream.setEncoding('utf8');
 	stream.on('data', (chunk) => {
-		const lines = chunk.split(/\r?\n/);
-		for (const line of lines) {
-			if (!line) {
-				continue;
-			}
-			if (line.includes('Error mutex already exists')) {
-				continue;
-			}
-			writer(`${line}\n`);
-		}
+		collector.push(chunk);
 	});
+}
+
+function normalizeSuccessfulRunOutput(rawOutput) {
+	const lines = rawOutput.split(/\r?\n/);
+	const filtered = [];
+	let shutdownStackDetected = false;
+
+	for (const line of lines) {
+		if (!line) {
+			continue;
+		}
+		if (line.includes('Error mutex already exists')) {
+			continue;
+		}
+		if (/^\s*at id\.S \(.+\)\s*$/.test(line)) {
+			shutdownStackDetected = true;
+			continue;
+		}
+		filtered.push(line);
+	}
+
+	if (shutdownStackDetected) {
+		filtered.push(
+			'WARN: normalized non-blocking VS Code Test Host shutdown stack (enable VSCODE_TEST_DEBUG=1 for raw output).',
+		);
+	}
+
+	return `${filtered.join('\n')}\n`;
 }
 
 function safeRemove(targetPath) {
@@ -163,11 +182,15 @@ async function main() {
 		env,
 	});
 
+	const debugRawOutput = process.env.VSCODE_TEST_DEBUG === '1';
+	const stdoutChunks = [];
+	const stderrChunks = [];
+
 	if (child.stdout) {
-		forwardWithoutMutexNoise(child.stdout, (text) => process.stdout.write(text));
+		captureStream(child.stdout, stdoutChunks);
 	}
 	if (child.stderr) {
-		forwardWithoutMutexNoise(child.stderr, (text) => process.stderr.write(text));
+		captureStream(child.stderr, stderrChunks);
 	}
 
 	child.on('error', (error) => {
@@ -185,6 +208,25 @@ async function main() {
 	});
 
 	child.on('close', (code) => {
+		const stdoutRaw = stdoutChunks.join('');
+		const stderrRaw = stderrChunks.join('');
+		const success = code === 0;
+		if (debugRawOutput || !success) {
+			if (stdoutRaw) {
+				process.stdout.write(stdoutRaw);
+			}
+			if (stderrRaw) {
+				process.stderr.write(stderrRaw);
+			}
+		} else {
+			if (stdoutRaw) {
+				process.stdout.write(normalizeSuccessfulRunOutput(stdoutRaw));
+			}
+			if (stderrRaw) {
+				process.stderr.write(normalizeSuccessfulRunOutput(stderrRaw));
+			}
+		}
+
 		if (!keepArtifacts) {
 			if (!customUserDataDir) {
 				safeRemove(userDataDir);

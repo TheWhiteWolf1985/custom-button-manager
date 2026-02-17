@@ -562,3 +562,19 @@ changes_log:
     risks:
       - "Le verifiche manuali UI richiedono ancora passaggio in Extension Development Host e non sono validabili integralmente da CLI."
 
+  - step_id: "STEP 012 (TASKS - 2026-02-17)"
+    summary: "Normalizzato stack non bloccante in uscita test host quando i test passano."
+    commit: ""
+    files:
+      - "scripts/run-vscode-tests.mjs"
+      - "AI/AI_RUNBOOK.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+      - "node scripts/run-vscode-tests.mjs (con VSCODE_EXECUTABLE_PATH invalido per verifica exit!=0)"
+    notes: "Con `exit=0` lo stack `at id.S (...)` viene sostituito da warning singola riga; con `exit!=0` non viene applicato filtering."
+    risks:
+      - "La normalizzazione avviene per pattern testuale specifico (`at id.S`); eventuali varianti future dello stack richiederanno aggiornamento pattern."
+

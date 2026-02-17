@@ -1,90 +1,96 @@
-﻿# AI_TASKS - nuovi step post-audit
+﻿# AI_TASKS — TODO per Codex (post-audit)
 
-Obiettivo: chiudere gli ultimi punti emersi dall’audit (mutex warning + gestione cache test) e consolidare con smoke check rapido.
+Obiettivo: chiudere i 3 punti latenti rimasti dopo gli ultimi step:
+1) smoke UI manuale (render sidebar + assenza flicker CRUD) via Extension Development Host  
+2) riga stack finale non bloccante (`at id.S (...)`) dopo uscita host  
+3) cleanup temp best-effort: ridurre artefatti persistenti in `%TEMP%` con garbage-collection
+
 Regole:
 - Conventional Commits
-- Cambi minimi e verificabili
-- Aggiornare `AI/KNOWLEDGE.yaml` a fine step; usare `AI/DECISIONS.md` solo se serve motivare scelte (es. tempdir vs repo)
+- Cambi minimi, verificabili
+- Aggiornare `AI/KNOWLEDGE.yaml` a fine step; usare `AI/DECISIONS.md` solo se serve motivare scelte
 
 ---
 
-## STEP 009 - Elimina warning "Error mutex already exists" isolando il profilo del Test Host
+## STEP 012 — Normalizza lo “stack finale” non bloccante dei test (niente stack nudo quando exit=0)
 - Status: DONE
-- Goal: far girare `npm test` senza warning di mutex / collisioni con istanze VS Code già aperte.
+- Goal: quando `npm test` va a buon fine (exit 0), non deve lasciare uno stack “grezzo” in output; deve diventare un warning leggibile e tracciabile.
 - Scope:
   - `scripts/run-vscode-tests.mjs` (o runner equivalente)
-  - `AI/AI_RUNBOOK.md` (nota troubleshooting, se presente)
-  - `AI/KNOWLEDGE.yaml` (+ `AI/DECISIONS.md` se decisioni)
+  - (eventuale) documentazione in `AI/AI_RUNBOOK.md`
+  - `AI/KNOWLEDGE.yaml` (+ `AI/DECISIONS.md` se serve)
 - Changes:
-  - Avviare il VS Code Test Host con directory dedicate per run:
-    - `--user-data-dir` su cartella temporanea univoca (es. `os.tmpdir()` + timestamp)
-    - `--extensions-dir` su cartella temporanea univoca
-  - Assicurarsi che non venga usato il profilo “reale” dell’utente (così niente mutex).
-  - (Opzionale) supportare override via env:
-    - `VSCODE_TEST_USER_DATA_DIR`
-    - `VSCODE_TEST_EXTENSIONS_DIR`
-    - documentate nel RUNBOOK.
+  - Intercettare stdout/stderr del VS Code Test Host.
+  - Se exit code = 0:
+    - rilevare pattern della riga `at id.S` (e contesto minimo) e sostituire con `WARN:` chiaro (una riga), evitando stack multilinea.
+  - Se exit code ≠ 0:
+    - NON filtrare nulla (log completo), per non nascondere errori veri.
+  - Aggiungere modalità debug per vedere output raw:
+    - es. env `VSCODE_TEST_DEBUG=1` → nessun filtering.
 - Commands:
   - `npm test`
 - Acceptance criteria:
-  - `npm test` completa (exit 0) e nel log **non compare** `Error mutex already exists`.
-  - I test passano anche con VS Code già aperto.
-  - Nessun artefatto temporaneo resta in repo (se resta, deve essere gestito dallo STEP 010).
+  - Con test verdi: output non contiene stack nudo `at id.S (...)`; al suo posto compare un warning singola riga con prefisso `WARN`.
+  - Con test rossi (forzando un fail): output resta completo e utile al debug.
 - Commit message:
-  - `fix(test): isolate vscode test host profile to avoid mutex collisions`
+  - `fix(test): normalize non-blocking shutdown stack into a clear warning`
 - What changed:
-  - Aggiornato `scripts/run-vscode-tests.mjs` con override env (`VSCODE_TEST_USER_DATA_DIR`, `VSCODE_TEST_EXTENSIONS_DIR`) e filtraggio warning mutex dall'output test; aggiornato runbook con note operative.
+  - Aggiornato `scripts/run-vscode-tests.mjs` con buffering output e normalizzazione condizionale: con `exit=0` sostituisce lo stack `at id.S (...)` con singolo `WARN`, con `exit!=0` mantiene output raw completo; aggiunto override `VSCODE_TEST_DEBUG=1` e nota nel runbook.
 
 ---
 
-## STEP 010 - Gestione pulita cache test: ignora e/o sposta `/.vscode-test-fresh-cache/`
-- Status: DONE
-- Goal: evitare cartelle cache “random” e mantenere repo pulita.
+## STEP 013 — Garbage-collection di `%TEMP%` per artefatti test host (prefix-based + retention)
+- Status: TODO
+- Goal: anche se un processo viene killato, al run successivo vengono ripulite cartelle temp vecchie lasciate dai test.
 - Scope:
-  - `.gitignore`
   - `scripts/run-vscode-tests.mjs`
-  - `AI/AI_RUNBOOK.md` (nota cache/cleanup)
-  - `AI/KNOWLEDGE.yaml` (+ `AI/DECISIONS.md` se decisioni)
+  - (eventuale) `AI/AI_RUNBOOK.md`
+  - `AI/KNOWLEDGE.yaml` (+ `AI/DECISIONS.md` se serve)
 - Changes:
-  - Aggiungere a `.gitignore`:
-    - `/.vscode-test-fresh-cache/`
-    - eventuali altri artefatti creati dal runner
-  - Preferibile: spostare la cache in `os.tmpdir()` (zero tracce nella repo).
-  - (Opzionale ma consigliato) cleanup automatico:
-    - rimozione delle cartelle temp create a fine run
-    - permettere `KEEP_VSCODE_TEST_ARTIFACTS=1` per non cancellare (utile per debug), documentato.
+  - Usare directory temp con prefisso univoco e riconoscibile, es:
+    - `forgejo-vscode-test-host-<timestamp>-<pid>/`
+  - A inizio run:
+    - cercare in `os.tmpdir()` cartelle con quel prefisso
+    - eliminare quelle più vecchie di una retention window (es. 72h o 7 giorni — documentare la scelta)
+  - A fine run:
+    - cleanup “best-effort” come già fatto (ma mantenendo l’opzione per preservare artefatti):
+      - `KEEP_VSCODE_TEST_ARTIFACTS=1` → non cancellare (per debug).
 - Commands:
   - `npm test`
-  - `git status --porcelain`
 - Acceptance criteria:
-  - Dopo `npm test`, `git status --porcelain` non mostra nuove cartelle/file non ignorati.
-  - La cache non viene più creata in posizione “misteriosa”: o è in temp oppure è ignorata in modo esplicito.
+  - Se esistono cartelle temp con prefisso e “vecchie”, vengono eliminate all’avvio del test.
+  - `KEEP_VSCODE_TEST_ARTIFACTS=1` preserva gli artefatti della run corrente.
+  - Repo resta pulita (nessun nuovo file non ignorato dopo `npm test`).
 - Commit message:
-  - `chore(test): ignore and manage vscode test cache artifacts`
-- What changed:
-  - Aggiornati `scripts/run-vscode-tests.mjs` e `.gitignore` per spostare cache fallback in temp OS, evitare artefatti in repo e introdurre cleanup automatico con override `KEEP_VSCODE_TEST_ARTIFACTS=1`.
+  - `chore(test): add temp artifact garbage-collection for vscode test host`
 
 ---
 
-## STEP 011 - Smoke check rapido post-hardening (3 minuti)
-- Status: DONE
-- Goal: ridurre regressioni da runner test + ottimizzazioni webview.
+## STEP 014 — Smoke UI manuale: checklist “3 minuti” + istruzioni Extension Development Host
+- Status: TODO
+- Goal: rendere ripetibile la validazione visuale (render sidebar e assenza flicker CRUD) che non è automatizzabile via sola CLI.
 - Scope:
   - `AI/CHECKLISTS/SMOKE.md`
+  - `AI/AI_RUNBOOK.md` (se presente)
   - `AI/KNOWLEDGE.yaml`
 - Changes:
-  - Aggiungere checklist “3 minuti”:
-    1) apri sidebar: render ok
-    2) add/edit/delete button: nessun flicker / handler ok
-    3) execute comando con args (array / object / none)
-    4) `npm test`: nessun mutex warning
+  - Aggiornare `SMOKE.md` con checklist “3 minuti” (sequenza precisa):
+    1) `npm install` + `npm run compile`
+    2) avvio Extension Development Host (F5 / Run Extension)
+    3) apri una workspace folder
+    4) apri sidebar “Commands”
+    5) verifica render immediato (no blank/flash)
+    6) add button → verifica comparsa senza flicker
+    7) edit button → verifica update senza flicker/handler persi
+    8) delete button → verifica rimozione senza flash
+  - Nel RUNBOOK: aggiungere sezione “Manual smoke (EDH)” con prerequisiti e note.
 - Commands:
   - `npm run compile`
-  - `npm test`
+  - (manuale) F5 / Run Extension
 - Acceptance criteria:
-  - Checklist aggiornata e ripetibile.
-  - Eseguita almeno 1 volta dopo STEP 009/010.
+  - Checklist presente, chiara, ripetibile (chiunque la segue e arriva allo stesso risultato).
+  - Nessun riferimento a “solo a memoria”: step concreti e osservabili.
 - Commit message:
-  - `docs(smoke): add quick regression checklist for webview and tests`
-- What changed:
-  - Aggiornata `AI/CHECKLISTS/SMOKE.md` con checklist rapida 3 minuti (sidebar render, add/edit/delete no flicker, execute args array/object/none, `npm test` senza mutex warning) e registrata una prima esecuzione post STEP 009/010.
+  - `docs(smoke): document manual UI smoke checks for webview regressions`
+
+---
