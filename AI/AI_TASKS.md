@@ -69,7 +69,7 @@ Regole:
 ---
 
 ## STEP 014 — Smoke UI manuale: checklist “3 minuti” + istruzioni Extension Development Host
-- Status: TODO
+- Status: DONE
 - Goal: rendere ripetibile la validazione visuale (render sidebar e assenza flicker CRUD) che non è automatizzabile via sola CLI.
 - Scope:
   - `AI/CHECKLISTS/SMOKE.md`
@@ -94,5 +94,7 @@ Regole:
   - Nessun riferimento a “solo a memoria”: step concreti e osservabili.
 - Commit message:
   - `docs(smoke): document manual UI smoke checks for webview regressions`
+- What changed:
+  - Aggiornati `AI/CHECKLISTS/SMOKE.md` e `AI/AI_RUNBOOK.md` con sequenza manuale ripetibile in Extension Development Host (F5/Run Extension), prerequisiti espliciti e step osservabili per validare render sidebar e assenza flicker su add/edit/delete.
 
 ---

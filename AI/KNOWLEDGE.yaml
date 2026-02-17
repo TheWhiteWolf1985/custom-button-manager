@@ -594,3 +594,19 @@ changes_log:
     risks:
       - "La retention e' fissa a 72h nel runner; se serve flessibilita' operativa va introdotta una configurazione esplicita."
 
+  - step_id: "STEP 014 (TASKS - 2026-02-17)"
+    summary: "Formalizzata checklist smoke manuale UI per EDH con passi osservabili."
+    commit: ""
+    files:
+      - "AI/CHECKLISTS/SMOKE.md"
+      - "AI/AI_RUNBOOK.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "Checklist 3 minuti ora include sequenza operativa completa da prerequisiti fino a verifica anti-flicker CRUD in sidebar."
+    risks:
+      - "La validazione EDH resta manuale e dipende dall'ambiente locale; non e' coperta da automazione CI."
+

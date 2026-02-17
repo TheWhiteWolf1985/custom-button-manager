@@ -83,3 +83,16 @@ Nota: i test usano `@vscode/test-cli` e richiedono ambiente GUI/Extension Test H
 - KEEP_VSCODE_TEST_ARTIFACTS=1: mantiene gli artefatti temporanei del runner per debug (default cleanup automatico).
 - Cache fallback test host: in temp OS (non nella repo).
 - Garbage-collection temp: all'avvio vengono rimossi i folder `%TEMP%` con prefisso `forgejo-vscode-test-host-` piu' vecchi di 72 ore.
+
+## Manual smoke (EDH)
+- Prerequisiti:
+  - Root repo aperta in VS Code.
+  - Dipendenze installate (`npm install`).
+  - Build aggiornata (`npm run compile`).
+- Esecuzione:
+  - Avviare `F5` con configurazione `Run Extension`.
+  - Aprire una workspace folder nell'Extension Development Host.
+  - Aprire sidebar `Commands` e verificare render immediato (no blank/flash).
+  - Verificare in sequenza Add/Edit/Delete button senza flicker e senza perdita handler.
+- Nota:
+  - Checklist operativa completa in `AI/CHECKLISTS/SMOKE.md` (sezione "Smoke rapido (3 minuti) - UI webview (EDH)").
