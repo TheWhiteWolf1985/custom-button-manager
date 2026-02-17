@@ -227,3 +227,18 @@ changes_log:
     risks:
       - "I placeholder `<<REQUIRED>>` richiedono aggiornamento se in futuro vengono introdotti Docker/Makefile/Python."
 
+  - step_id: "STEP 005 (2026-02-17)"
+    summary: "Allineati inventario e convenzioni a sole evidenze presenti in repository."
+    commit: ""
+    files:
+      - "AI/AI_CONVENTIONS.md"
+      - "AI/AI_INVENTORY.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "Get-ChildItem -Directory | Select-Object -ExpandProperty Name"
+      - "rg -n \"conventional commits|commit message|lint|format|prettier|eslint|black|ruff|flake8|mypy|pytest\" -S ."
+      - "git log -n 30 --pretty=oneline"
+    notes: "Confermate convenzioni commit da storico recente; impostato `<<REQUIRED>>` su branch naming per mancanza policy formalizzata."
+    risks: []
+

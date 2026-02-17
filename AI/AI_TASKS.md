@@ -97,7 +97,7 @@
 ---
 
 ## STEP 005 — Compilazione completa: AI/AI_INVENTORY.md + AI/AI_CONVENTIONS.md
-- Status: TODO
+- Status: DONE
 - Goal: Popolare inventario e convenzioni con info esplicite (da repo/doc), senza assunzioni.
 - Scope:
   - `AI/AI_INVENTORY.md`
@@ -118,6 +118,8 @@
   - CONVENTIONS contiene solo standard supportati o placeholders.
 - Commit message:
   - "docs(ai): compile inventory and conventions"
+- What changed:
+  - Verificate cartelle/componenti esistenti in `AI_INVENTORY.md` e aggiornate convenzioni con placeholder `<<REQUIRED>>` dove non esiste policy esplicita (branch naming).
 
 ---
 

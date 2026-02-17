@@ -9,8 +9,7 @@ Esempio:
 - `chore(ai): initialize project AI context`
 
 ## Branch naming
-- Pattern consigliato: `type/short-topic`.
-- Valore adottato per interventi locali: `chore/ai-context-bootstrap`.
+- Pattern branch documentato nel repository: `<<REQUIRED>>` (nessun `CONTRIBUTING`/policy branch trovato).
 
 ## Naming code
 - Naming coerente con standard del progetto target.
