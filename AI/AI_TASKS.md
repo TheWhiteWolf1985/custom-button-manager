@@ -1,48 +1,42 @@
-﻿# AI_TASKS — GitHub tiles + default git actions
+﻿# AI_TASKS — UI tiles globali + categoria AI + onboarding + menu categorie + nuova icona
 
-Obiettivo: migliorare UX del submenù GitHub con tiles verticali e introdurre azioni Git base (push/pull/fetch) di default eseguite in terminale.
-
-Vincoli:
-- Cambi piccoli e verificabili.
-- Conventional Commits.
-- Nessuna dipendenza nuova non necessaria.
-- Aggiornare `AI/KNOWLEDGE.yaml` a fine step; usare `AI/DECISIONS.md` solo se serve tracciare scelte (es. schema dati, compatibilità).
-
-Assunzioni operative:
-- Esiste una categoria/submenù “GitHub” (nome case-insensitive).
-- Esiste già il rendering webview dei pulsanti e un modello dati “button”.
+Obiettivo: applicare UX “tiles verticali” a tutte le categorie, rinominare “Preferiti” → “AI”, aggiungere azioni default (starter pack minimo), introdurre gestione categorie (Add Category + menu ⋮), e migliorare icona estensione.  
+Vincoli/Decisioni (da utente):
+- Riutilizzare ESATTAMENTE lo stesso componente/CSS delle tiles già fatto per GitHub (niente reinventare).
+- Icone: Codicons (no dipendenze esterne).
+- Description: opzionale.
+- Nomi categorie: unici (case-insensitive). Se duplicato → errore e stop (niente auto-suffix).
+- Nomi pulsanti: unici dentro la categoria (case-insensitive). Se duplicato → errore e stop.
+- AI structure: click → lancia script PowerShell che crea cartelle+file con contenuto; se `AI/` esiste → rinomina la cartella top-level in `AI_new` (senza “disastri” interni).
+- Menu categorie: usare ⋮ e QuickPick; delete con conferma “hard” se categoria non vuota.
+- Icona estensione: techy, monochrome.
 
 ---
 
-## STEP 001 — UX: GitHub buttons → tiles verticali 1-per-riga (layout come reference)
+## STEP 001 — UI/UX: tiles verticali per TUTTE le categorie (riuso 1:1 del componente GitHub)
 - Status: DONE
-- Goal: Nel submenù/categoria GitHub i pulsanti non sono più “square grid”, ma tiles verticali (una per riga) con layout:
-  - box esterno con `border-radius: 5px`
-  - colonna sinistra: icon (area dedicata)
-  - colonna destra: title (riga 1) + description (riga 2)
+- Goal: sostituire ovunque i pulsanti “quadrati” con tiles verticali 1-per-riga identiche a GitHub (stesso CSS/componente).
 - Scope:
-  - Webview HTML/CSS/JS che renderizza la categoria GitHub
-  - Solo styling/layout del submenù GitHub (altre categorie invariate)
+  - Webview render (HTML/CSS/JS) di tutte le categorie
+  - Styling: riuso classi già esistenti delle tiles GitHub
 - Changes:
-  - Aggiungere classi CSS dedicate (es. `.github-tile`, `.github-tile__icon`, `.github-tile__content`, `.github-tile__title`, `.github-tile__desc`)
-  - Forzare layout 1-colonna per GitHub (flex/ grid) e spacing coerente
-  - Border esterno arrotondato: `border-radius: 5px;`
-  - Garantire che click/hover/focus continuino a funzionare (no regress su handler)
+  - Rendere il renderer “tile” il default per ogni categoria (non solo GitHub).
+  - Assicurare `border-radius: 5px` sul contenitore esterno (come già definito nel componente tiles).
+  - Icon area a sinistra (Codicon), title sopra, description sotto (description opzionale: se vuota non occupa spazio).
+  - Nessun cambio di UX funzionale (click/CRUD invariati).
 - Commands:
   - `npm run compile`
-  - Manuale: F5 (Extension Development Host) → apri workspace → apri sidebar → verifica GitHub tiles render e interazioni
+  - Manuale: F5 (Extension Development Host) → apri workspace → verifica rendering tiles su tutte le categorie
 - Acceptance criteria:
-  - In GitHub: ogni azione appare come tile 1-per-riga con icon/title/description come reference
-  - Border esterno arrotondato visibile (`5px`)
-  - Nessun flicker evidente su CRUD (add/edit/delete) dentro GitHub
-  - Altre categorie mantengono layout attuale
+  - Tutte le categorie usano tiles verticali 1-per-riga, identiche alla tile GitHub già implementata
+  - Nessuna regressione su click/CRUD
 - Commit message:
-  - `feat(ui): render GitHub buttons as vertical tiles with icon/title/description`
+  - `feat(ui): use existing tile component as default layout for all categories`
 - What changed:
-  - Nel rendering webview è stata aggiunta una variante dedicata alla categoria GitHub (match per `id/label` case-insensitive) con layout 1-colonna.
-  - Introdotte classi CSS specifiche `.github-tile*` con `border-radius: 5px`, area icona a sinistra e area testo (title + description) a destra.
-  - Le altre categorie continuano a usare il layout grid attuale senza modifiche.
-  - Handler click/menu dei pulsanti GitHub restano invariati (`execute`/`menu` via `postMessage`).
+  - Il renderer webview usa ora il componente tile verticale già esistente come default per tutte le categorie.
+  - Le tiles sono sempre 1-per-riga con `border-radius: 5px`, icona a sinistra e blocco title/description a destra.
+  - La description resta opzionale: se vuota non viene renderizzata.
+  - Nessuna modifica al flusso funzionale click/CRUD (`execute`/`menu` invariati).
 - Files touched:
   - `src/extension.ts`
   - `AI/AI_TASKS.md`
@@ -52,164 +46,211 @@ Assunzioni operative:
 
 ---
 
-## STEP 002 — Modello dati: aggiungere supporto a `icon` e `description` (retrocompatibile)
-- Status: DONE
-- Goal: Abilitare title/description/icon per le tiles GitHub senza rompere config esistenti.
+## STEP 002 — Rinominare “Preferiti” → “AI” (refactor semplice, no migrazione complessa)
+- Status: TODO
+- Goal: sostituire naming in UI e seed defaults: categoria “Preferiti” diventa “AI”.
 - Scope:
-  - Modello dati dei button (type/interface)
-  - Migrazione/normalizzazione config esistente (se presente)
-  - Webview render (lettura campi)
+  - Seed categorie default / label UI
+  - Eventuali stringhe hardcoded e test snapshot (se presenti)
 - Changes:
-  - Estendere lo schema button con campi opzionali:
-    - `title` (o usare `label` come fallback)
-    - `description` (string opzionale)
-    - `icon` (string opzionale: emoji o codicon-name/placeholder a discrezione, senza nuove deps)
-  - Normalizzazione: se mancano campi, usare fallback sicuri:
-    - title = `title ?? label ?? "Untitled"`
-    - description = `description ?? ""`
-    - icon = `icon ?? ""`
-  - Aggiornare render GitHub per mostrare title/description/icon (senza crash se vuoti)
+  - Rinominare tutte le occorrenze di “Preferiti” in “AI”.
+  - Se esiste logica di seed iniziale: creare “AI” invece di “Preferiti”.
+  - (Dato che è in test) niente migrazione elaborata: il rename è sufficiente.
 - Commands:
   - `npm run compile`
-  - `npm test` (se presente)
+  - Manuale: EDH → verifica che la categoria esca come “AI”
 - Acceptance criteria:
-  - Config esistenti si caricano senza errori
-  - GitHub tiles mostrano title/description/icon quando presenti; quando assenti non rompono UI
+  - “Preferiti” non compare più in UI né nei default
+  - “AI” compare al suo posto
 - Commit message:
-  - `refactor(core): extend button schema with optional icon and description`
-- What changed:
-  - Esteso il modello `CommandButton` con campi opzionali `title` e `description`, mantenendo compatibilità con `label`.
-  - In `resolveCategoriesFromConfig` aggiunta normalizzazione retrocompatibile: fallback su `title/label`, `description` e `icon` sempre sicuri.
-  - Aggiornato il render webview per leggere `title/description` sulle tiles GitHub senza crash quando i campi non sono presenti.
-  - Aggiunti test unitari sui fallback (`title ?? label ?? "Untitled"`, `description ?? ""`, `icon ?? ""`).
-- Files touched:
-  - `src/extension.ts`
-  - `src/test/extension.test.ts`
-  - `AI/AI_TASKS.md`
-- Commands run:
-  - `npm run compile` (PASS)
-  - `npm test` (PASS)
+  - `chore(ui): rename default category Preferiti to AI`
 
 ---
 
-## STEP 003 — Esecuzione in terminale: introdurre `terminalCommand` (push/pull/fetch devono usare terminale)
-- Status: DONE
-- Goal: Permettere a un button di eseguire un comando nel terminale VS Code (non solo `vscode.commands.executeCommand`).
+## STEP 003 — Validazione unicità (case-insensitive) per categorie e pulsanti
+- Status: TODO
+- Goal: bloccare creazione/rename se il nome è già presente (categorie globali; pulsanti dentro categoria).
 - Scope:
-  - Logica di esecuzione del click (provider/extension runtime)
-  - Gestione terminale (creazione/riuso) e cwd (workspace folder)
+  - Flussi: add category, rename category, add button, edit/rename button (se esiste)
 - Changes:
-  - Introdurre supporto a button “terminal action” (minimo):
-    - nuovo campo opzionale: `terminalCommand: string`
-    - se presente: aprire/riusare un terminale dedicato (nome stabile, es. `Custom Button Manager`)
-    - impostare `cwd` sulla prima workspace folder (se presente), altrimenti fallback a default
-    - eseguire con `terminal.sendText(terminalCommand, true)`
-  - Gestione errori:
-    - se non c’è workspace folder: mostrare messaggio “Apri una cartella workspace…” (coerente con stile progetto)
+  - Implementare check case-insensitive:
+    - categoria: `trim().toLowerCase()` su tutte le categorie esistenti
+    - pulsante: confronto su `title` (fallback `label`) dentro la categoria
+  - In caso di collisione: mostrare errore e non salvare nulla.
 - Commands:
   - `npm run compile`
-  - Manuale: EDH → click su un button terminalCommand → terminale si apre e comando parte
-  - `npm test` (aggiungere/aggiornare test se suite disponibile)
+  - `npm test` (se suite presente)
+  - Manuale: provare duplicati (stesso nome con case diversa)
 - Acceptance criteria:
-  - Un button con `terminalCommand` lancia davvero il comando nel terminale (apre terminale se non esiste)
-  - Non interferisce con i button “command id” già esistenti
-  - Nessun crash quando workspace non è aperta: messaggio utente chiaro
+  - Non è possibile creare/renominare categorie con nome duplicato (case-insensitive)
+  - Non è possibile creare/renominare pulsanti duplicati dentro la stessa categoria (case-insensitive)
 - Commit message:
-  - `feat(core): support terminalCommand buttons executed via VS Code terminal`
-- What changed:
-  - Esteso `CommandButton` con campo opzionale `terminalCommand` e introdotta `executeButtonAction` per instradare correttamente azioni terminale vs command-id.
-  - In `CommandViewProvider.executeButton` aggiunta esecuzione terminale con riuso/creazione terminale dedicato (`Custom Button Manager`) e `cwd` sulla prima workspace folder.
-  - Aggiunta gestione errore esplicita quando manca una workspace folder aperta (`Apri una cartella workspace...`) senza crash.
-  - I pulsanti esistenti basati su `command` continuano a usare `vscode.commands.executeCommand`.
-- Files touched:
-  - `src/extension.ts`
-  - `src/test/extension.test.ts`
-  - `AI/AI_TASKS.md`
-- Commands run:
-  - `npm run compile` (PASS)
-  - `npm test` (PASS)
-  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
+  - `fix(core): enforce case-insensitive uniqueness for categories and buttons`
 
 ---
 
-## STEP 004 — Default GitHub actions: aggiungere push/pull/fetch preconfigurate
-- Status: DONE
-- Goal: Nel submenù GitHub, creare di default le tiles base:
-  - `Git Fetch` → `git fetch`
-  - `Git Pull` → `git pull`
-  - `Git Push` → `git push`
+## STEP 004 — Pulsante globale “Aggiungi categoria” in cima (sotto header estensione)
+- Status: TODO
+- Goal: aggiungere un controllo globale sempre visibile “Aggiungi categoria”.
 - Scope:
-  - Inizializzazione config di default / seed categories
-  - Categoria GitHub (case-insensitive)
-  - Campi icon/title/description + terminalCommand
+  - Webview top area (header)
+  - Handler lato extension (creazione categoria)
 - Changes:
-  - Seed di default (solo se mancano):
-    - se la categoria GitHub non esiste: crearla con questi 3 button
-    - se esiste ma mancano uno o più tra fetch/pull/push: aggiungerli senza duplicare
-  - Definire tiles con:
-    - icon: (emoji o placeholder) per differenziare visivamente
-    - title: `Fetch` / `Pull` / `Push`
-    - description: breve (es. “Aggiorna refs”, “Scarica e unisci”, “Invia commit al remoto”)
-    - terminalCommand: `git fetch` / `git pull` / `git push`
+  - Inserire pulsante “Aggiungi categoria” sotto il titolo/nome estensione.
+  - Click → input nome → validazione unicità (STEP 003) → crea categoria vuota.
+  - Se nome duplicato: errore e non creare.
 - Commands:
   - `npm run compile`
-  - Manuale: EDH → apri GitHub → verificare presenza tiles default → click → terminale esegue comando
+  - Manuale: EDH → aggiungi categoria nuova; prova duplicato
 - Acceptance criteria:
-  - Prima install/run su workspace nuova: GitHub mostra fetch/pull/push senza configurazione manuale
-  - Nessun duplicato se l’utente ha già button simili
-  - Click su ciascuna tile esegue il comando in terminale (cwd workspace)
+  - Pulsante visibile e funzionante
+  - Validazione unicità rispettata
 - Commit message:
-  - `feat(defaults): add GitHub default tiles for fetch/pull/push`
-- What changed:
-  - Introdotto seed default per categoria GitHub con 3 azioni (`git fetch`, `git pull`, `git push`) valorizzando `icon`, `title`, `description` e `terminalCommand`.
-  - Inizializzazione retrocompatibile: se categoria GitHub manca viene creata; se esiste vengono aggiunti solo i default mancanti.
-  - Evitati duplicati confrontando i `terminalCommand` già presenti nella categoria GitHub.
-  - Aggiornati test su normalizzazione/seed per verificare presenza default e assenza duplicazioni.
-- Files touched:
-  - `src/extension.ts`
-  - `src/test/extension.test.ts`
-  - `AI/AI_TASKS.md`
-- Commands run:
-  - `npm run compile` (PASS)
-  - `npm test` (PASS)
-  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
+  - `feat(ui): add global Add Category action in header`
 
 ---
 
-## STEP 005 — QA: smoke checklist per tiles GitHub + git actions
-- Status: DONE
-- Goal: Rendere ripetibile la validazione manuale (UI) e ridurre rischio regressioni.
+## STEP 005 — Header categoria: sostituire “+” con menu ⋮ (QuickPick: Elimina / Rinomina / Aggiungi pulsante)
+- Status: TODO
+- Goal: rimuovere il pulsante “+” dall’accordion header e sostituirlo con ⋮; azioni via menu contestuale con iconografia standard.
+- Scope:
+  - Webview accordion header
+  - Handler lato extension: menu QuickPick e azioni
+- Changes:
+  - Rimuovere icona/azione “+” dal header.
+  - Aggiungere ⋮ (vertical ellipsis) per ogni categoria.
+  - Click su ⋮ → QuickPick con:
+    - `Aggiungi pulsante`
+    - `Rinomina`
+    - `Elimina`
+  - Elimina:
+    - se categoria contiene pulsanti → conferma hard con conteggio
+    - se confermato → elimina categoria e relativi pulsanti
+  - Rinomina:
+    - input nome → validazione unicità (STEP 003)
+  - Aggiungi pulsante:
+    - richiama il flusso già esistente “add button” dentro quella categoria
+- Commands:
+  - `npm run compile`
+  - Manuale: EDH → apri menu ⋮ → prova rename/delete/add
+- Acceptance criteria:
+  - “+” non è più presente nel header
+  - ⋮ apre QuickPick con le 3 azioni
+  - Delete richiede conferma se non vuota
+  - Rename blocca duplicati case-insensitive
+- Commit message:
+  - `feat(ui): replace header add button with kebab menu for category actions`
+
+---
+
+## STEP 006 — Starter pack minimo (3–5 azioni) + categorie base (AI, Workspace, GitHub, Build/Test, Utils)
+- Status: TODO
+- Goal: dare all’utente un set minimo subito usabile, senza riempire la sidebar di roba.
+- Scope:
+  - Seed defaults
+  - Definizione bottoni standard (terminal vs VS Code command)
+- Changes:
+  - Assicurare presenza categorie default:
+    - `AI`, `Workspace`, `GitHub`, `Build/Test`, `Utils`
+  - Seed minimo (3–5 azioni TOTALI o comunque “minimo sindacale” per partire):
+    - GitHub: `Fetch`, `Pull`, `Push` (terminal command)
+    - AI: `Crea struttura AI` (vedi STEP 007)
+    - (Opzionale 1 sola utility “starter”): `Reload Window` oppure `Toggle Terminal`
+  - Regole seed:
+    - creare solo se mancano (niente duplicati)
+    - rispettare unicità case-insensitive (STEP 003)
+- Commands:
+  - `npm run compile`
+  - Manuale: EDH su workspace “pulita” → verifica seed
+- Acceptance criteria:
+  - Le categorie base esistono
+  - Le azioni minime sono presenti e non duplicate
+  - Click sulle azioni terminal apre terminal e lancia comando (dove previsto)
+- Commit message:
+  - `feat(defaults): seed minimal starter actions across default categories`
+
+---
+
+## STEP 007 — Categoria AI: pulsante “Crea struttura AI” che lancia PowerShell script
+- Status: TODO
+- Goal: un pulsante in categoria AI che crea la struttura AI nel workspace attivo eseguendo uno script PowerShell.
+- Scope:
+  - Script PowerShell (nuovo file in repo, versionato)
+  - Integrazione button → terminal execution
+  - Template contenuti AI (derivati da `AI.rar`)
+- Changes:
+  - Inserire in repo uno script unico, es:
+    - `scripts/create-ai-structure.ps1`
+  - Lo script deve:
+    1) determinare la workspace folder target (passata come argomento dal runner/extension)
+    2) se esiste `<workspace>/AI`:
+       - rinominare SOLO la cartella top-level in `AI_new`
+       - **se `AI_new` esiste già**, usare un suffix sicuro tipo `AI_new_2`, `AI_new_3`, ...
+    3) creare la struttura cartelle+file con contenuto, basandosi sul template derivato da `AI.rar`
+  - Aggiungere/aggiornare il button default in categoria AI:
+    - tile con Codicon (es. `codicon-folder-library` o simile)
+    - title: `Crea struttura AI`
+    - description: `Crea AI/ e i file base del kit`
+    - action: lancia PowerShell in terminale con `-ExecutionPolicy Bypass -File ... -WorkspacePath ...`
+  - Comportamento non-Windows:
+    - mostrare errore user-friendly (“funzione disponibile solo su Windows/PowerShell”) e non fare nulla
+- Commands:
+  - `npm run compile`
+  - Manuale (Windows): EDH → click tile → verifica creazione struttura
+  - Manuale (Windows): se AI esiste → verifica rename a AI_new(+suffix)
+- Acceptance criteria:
+  - Click su “Crea struttura AI” crea la struttura prevista (cartelle + file con contenuto)
+  - Se `AI/` esiste, viene rinominata a `AI_new` (o `AI_new_N`) senza toccare contenuti interni
+  - Nessun file creato fuori workspace target
+  - Non-Windows: messaggio chiaro, nessun side-effect
+- Commit message:
+  - `feat(ai): add PowerShell action to generate AI folder structure in workspace`
+- Notes/Inputs:
+  - `AI.rar` deve essere reso disponibile in repo (es. `templates/AI/` estratto) e usato come sorgente contenuti.
+
+---
+
+## STEP 008 — Icona estensione: nuova icona techy monochrome (sostituire “quadrato bianco”)
+- Status: TODO
+- Goal: sostituire l’icona attuale con una più leggibile e coerente.
+- Scope:
+  - Asset icona (es. `resources/icon.png` e sorgente `resources/icon.svg`)
+  - `package.json` (campo `icon`)
+- Changes:
+  - Produrre una nuova icona monochrome, stile techy (es. tiles + simbolo comando/chevron/bolt in line art).
+  - Salvare sorgente (SVG) e export PNG per VS Code Marketplace.
+  - Aggiornare il path icon in `package.json`.
+- Commands:
+  - `npm run compile`
+  - Manuale: verificare che VS Code mostri la nuova icona (Extensions view / sidebar)
+- Acceptance criteria:
+  - L’icona non è più un quadrato bianco pieno
+  - Risulta leggibile a 16–32 px
+- Commit message:
+  - `chore(assets): replace extension icon with techy monochrome design`
+
+---
+
+## STEP 009 — Smoke checklist aggiornata (UI tiles globali + menu ⋮ + AI create structure)
+- Status: TODO
+- Goal: rendere verificabile in 3–5 minuti la qualità post-cambiamenti.
 - Scope:
   - `AI/CHECKLISTS/SMOKE.md`
-  - (opzionale) `AI/AI_RUNBOOK.md` (sezione “Manual smoke - Extension Development Host”)
   - `AI/KNOWLEDGE.yaml`
 - Changes:
-  - Aggiungere checklist “3 minuti”:
-    1) `npm run compile`
-    2) F5 → Extension Development Host
-    3) apri una workspace folder con un repo git
-    4) apri sidebar → sezione GitHub
-    5) verifica tiles 1-per-riga + border-radius 5px + icon/title/description
-    6) click Fetch/Pull/Push → terminale si apre e lancia comando (cwd corretto)
-    7) CRUD button in GitHub: add/edit/delete senza flicker evidente e senza perdere handler click
+  - Aggiungere checklist:
+    1) F5 EDH → tutte categorie in tiles verticali
+    2) “Aggiungi categoria” funziona + blocco duplicati
+    3) ⋮ menu categoria: aggiungi/rename/delete (con conferma su delete)
+    4) Categoria AI: “Crea struttura AI” crea struttura; se AI esiste → rename AI_new(+suffix)
+    5) Starter pack presente senza duplicati
 - Commands:
   - `npm run compile`
-  - `npm test` (se presente)
+  - (manuale) F5 / Run Extension
 - Acceptance criteria:
-  - Checklist aggiornata e chiara (ripetibile da terzi)
-  - Eseguita almeno una volta dopo STEP 001–004
+  - Checklist presente, chiara, ripetibile
+  - Eseguita almeno una volta post STEP 001–008
 - Commit message:
-  - `docs(smoke): add manual checks for GitHub tiles and git terminal actions`
-- What changed:
-  - Aggiornata `AI/CHECKLISTS/SMOKE.md` con checklist dedicata “GitHub tiles + git actions” (sequenza in 7 step ripetibile).
-  - Registrata una prima esecuzione post STEP 001-004 con evidenze CLI (`npm run compile`, `npm test`) e punti EDH esplicitati.
-  - La checklist include verifica layout 1-per-riga, border-radius 5px, icon/title/description, esecuzione terminale Fetch/Pull/Push e CRUD senza flicker.
-- Files touched:
-  - `AI/CHECKLISTS/SMOKE.md`
-  - `AI/AI_TASKS.md`
-- Commands run:
-  - `npm run compile` (PASS)
-  - `npm test` (PASS)
-  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
+  - `docs(smoke): update checklist for global tiles, category menu, and AI bootstrap`
 
 ---

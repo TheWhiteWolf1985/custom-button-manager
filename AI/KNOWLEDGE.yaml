@@ -686,3 +686,17 @@ changes_log:
     risks:
       - "Le verifiche EDH restano manuali e dipendono dalla disponibilita' ambiente locale."
 
+  - step_id: "STEP 001 (TASKS UI tiles globali - 2026-02-20)"
+    summary: "Applicato layout tile verticale esistente come default per tutte le categorie."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "Il componente CSS/DOM delle tiles GitHub e' ora riusato 1:1 su tutte le categorie, mantenendo invariati i handler funzionali."
+    risks:
+      - "La verifica UX no-flicker su tutte le categorie resta manuale in Extension Development Host."
+

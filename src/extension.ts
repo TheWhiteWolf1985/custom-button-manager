@@ -657,7 +657,6 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			function buildCategorySection(cat, catIndex) {
 				const section = document.createElement('div');
 				section.className = 'category';
-				const isGitHubCategory = (cat.id || '').toLowerCase() === 'github' || (cat.label || '').toLowerCase() === 'github';
 
 				const header = document.createElement('div');
 				header.className = 'category-header';
@@ -711,16 +710,12 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 				} else {
 					const grid = document.createElement('div');
 					grid.className = 'grid';
-					if (isGitHubCategory) {
-						grid.classList.add('github-grid');
-					}
+					grid.classList.add('github-grid');
 
 					cat.buttons.forEach((btn, buttonIndex) => {
 						const tile = document.createElement('div');
 						tile.className = 'tile';
-						if (isGitHubCategory) {
-							tile.classList.add('github-tile');
-						}
+						tile.classList.add('github-tile');
 
 						const menu = document.createElement('button');
 						menu.className = 'menu-btn';
@@ -734,40 +729,31 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 						const button = document.createElement('button');
 						button.className = 'command-btn';
 						button.type = 'button';
-						if (isGitHubCategory) {
-							button.classList.add('github-tile__button');
-						}
+						button.classList.add('github-tile__button');
 						button.addEventListener('click', () => {
 							vscode.postMessage({ type: 'execute', categoryIndex: catIndex, buttonIndex });
 						});
 
 						const icon = document.createElement('span');
 						icon.className = 'codicon codicon-' + (btn.icon || 'terminal');
-						if (isGitHubCategory) {
-							icon.classList.add('github-tile__icon');
-						}
+						icon.classList.add('github-tile__icon');
 
-						const label = document.createElement('span');
-						label.className = 'label';
-						label.textContent = btn.title || btn.label || btn.command || 'Untitled';
+						const content = document.createElement('span');
+						content.className = 'github-tile__content';
 
-						if (isGitHubCategory) {
-							const content = document.createElement('span');
-							content.className = 'github-tile__content';
+						const title = document.createElement('span');
+						title.className = 'github-tile__title';
+						title.textContent = btn.title || btn.label || 'Untitled';
 
-							const title = document.createElement('span');
-							title.className = 'github-tile__title';
-							title.textContent = btn.title || btn.label || 'Untitled';
-
+						const descText = (btn.description || '').trim();
+						content.append(title);
+						if (descText) {
 							const desc = document.createElement('span');
 							desc.className = 'github-tile__desc';
-							desc.textContent = btn.description || '';
-
-							content.append(title, desc);
-							button.append(icon, content);
-						} else {
-							button.append(icon, label);
+							desc.textContent = descText;
+							content.append(desc);
 						}
+						button.append(icon, content);
 						tile.append(button, menu);
 						grid.append(tile);
 					});
