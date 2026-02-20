@@ -12,3 +12,8 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+AI/
+.temp/
+.vscode/
+.vscode-test/
+.vscode-test-fresh-cache/

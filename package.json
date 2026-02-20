@@ -1,8 +1,9 @@
 {
   "name": "custom-command-sidebar",
-  "displayName": "Custom command sidebar",
+  "displayName": "Custom Command Sidebar",
   "description": "Add buttons to run different custom commands or routines",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "license": "MIT",
   "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.107.0"
@@ -15,6 +16,10 @@
     "onCommand:myCommandSidebar.addButton"
   ],
   "main": "./dist/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheWhiteWolf1985/custom-button-manager.git"
+  },
   "contributes": {
     "commands": [
       {
@@ -52,13 +57,29 @@
           "type": "array",
           "description": "Categorie della sidebar Commands, ciascuna con la propria lista di pulsanti.",
           "default": [
-            { "id": "ai", "label": "AI", "buttons": [] },
-            { "id": "workspace", "label": "Workspace", "buttons": [] },
-            { "id": "github", "label": "Github", "buttons": [] }
+            {
+              "id": "ai",
+              "label": "AI",
+              "buttons": []
+            },
+            {
+              "id": "workspace",
+              "label": "Workspace",
+              "buttons": []
+            },
+            {
+              "id": "github",
+              "label": "Github",
+              "buttons": []
+            }
           ],
           "items": {
             "type": "object",
-            "required": [ "id", "label", "buttons" ],
+            "required": [
+              "id",
+              "label",
+              "buttons"
+            ],
             "properties": {
               "id": {
                 "type": "string",
@@ -72,14 +93,33 @@
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "required": [ "label", "command" ],
+                  "required": [
+                    "label",
+                    "command"
+                  ],
                   "properties": {
-                    "label": { "type": "string", "description": "Testo mostrato sul pulsante." },
-                    "command": { "type": "string", "description": "Command identifier da eseguire." },
-                    "icon": { "type": "string", "description": "Nome Codicon (senza prefisso codicon-)." },
+                    "label": {
+                      "type": "string",
+                      "description": "Testo mostrato sul pulsante."
+                    },
+                    "command": {
+                      "type": "string",
+                      "description": "Command identifier da eseguire."
+                    },
+                    "icon": {
+                      "type": "string",
+                      "description": "Nome Codicon (senza prefisso codicon-)."
+                    },
                     "args": {
                       "description": "Argomenti passati al comando (qualsiasi JSON).",
-                      "type": [ "array", "object", "string", "number", "boolean", "null" ]
+                      "type": [
+                        "array",
+                        "object",
+                        "string",
+                        "number",
+                        "boolean",
+                        "null"
+                      ]
                     }
                   }
                 }
