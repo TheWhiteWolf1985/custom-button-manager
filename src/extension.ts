@@ -22,10 +22,12 @@ const LEGACY_KEY = 'buttons';
 const VIEW_ID = 'myCommandSidebar.view';
 const TERMINAL_NAME = 'Custom Button Manager';
 
-const DEFAULT_CATEGORIES: CommandCategory[] = [
-	{ id: 'ai', label: 'AI', buttons: [] },
-	{ id: 'workspace', label: 'Workspace', buttons: [] },
-	{ id: 'github', label: 'Github', buttons: [] },
+const DEFAULT_CATEGORY_DEFS: Array<{ id: string; label: string }> = [
+	{ id: 'ai', label: 'AI' },
+	{ id: 'workspace', label: 'Workspace' },
+	{ id: 'github', label: 'Github' },
+	{ id: 'build-test', label: 'Build/Test' },
+	{ id: 'utils', label: 'Utils' },
 ];
 
 const GITHUB_DEFAULT_BUTTONS: CommandButton[] = [
@@ -52,6 +54,27 @@ const GITHUB_DEFAULT_BUTTONS: CommandButton[] = [
 		icon: 'arrow-up',
 		command: 'workbench.action.terminal.new',
 		terminalCommand: 'git push',
+	},
+];
+
+const AI_DEFAULT_BUTTONS: CommandButton[] = [
+	{
+		label: 'Crea struttura AI',
+		title: 'Crea struttura AI',
+		description: 'Crea AI/ e i file base del kit',
+		icon: 'folder-library',
+		command: 'workbench.action.terminal.new',
+		terminalCommand: 'powershell -ExecutionPolicy Bypass -File scripts/create-ai-structure.ps1',
+	},
+];
+
+const UTILS_DEFAULT_BUTTONS: CommandButton[] = [
+	{
+		label: 'Reload Window',
+		title: 'Reload Window',
+		description: 'Ricarica la finestra di VS Code',
+		icon: 'refresh',
+		command: 'workbench.action.reloadWindow',
 	},
 ];
 
@@ -114,39 +137,67 @@ function isGitHubCategory(category: CommandCategory): boolean {
 	return category.id?.toLowerCase() === 'github' || category.label?.toLowerCase() === 'github';
 }
 
-function ensureGitHubDefaultButtons(categories: CommandCategory[]): CommandCategory[] {
+function isAiCategory(category: CommandCategory): boolean {
+	return category.id?.toLowerCase() === 'ai' || category.label?.toLowerCase() === 'ai';
+}
+
+function isUtilsCategory(category: CommandCategory): boolean {
+	return category.id?.toLowerCase() === 'utils' || category.label?.toLowerCase() === 'utils';
+}
+
+function ensureSeedButtons(
+	category: CommandCategory,
+	seedButtons: CommandButton[],
+): CommandCategory {
+	const nextCategory: CommandCategory = {
+		...category,
+		buttons: category.buttons.map((button) => ({ ...button })),
+	};
+	for (const seedButton of seedButtons) {
+		const seedName = getButtonName(seedButton);
+		if (hasButtonNameCollision(nextCategory, seedName)) {
+			continue;
+		}
+		nextCategory.buttons.push(normalizeButton(seedButton));
+	}
+	return nextCategory;
+}
+
+function ensureDefaultCategoriesAndButtons(categories: CommandCategory[]): CommandCategory[] {
 	const nextCategories = categories.map((category) => ({
 		...category,
 		buttons: category.buttons.map((button) => ({ ...button })),
 	}));
 
-	let githubIndex = nextCategories.findIndex(isGitHubCategory);
-	if (githubIndex < 0) {
-		nextCategories.push({
-			id: 'github',
-			label: 'Github',
-			buttons: GITHUB_DEFAULT_BUTTONS.map(normalizeButton),
-		});
-		return nextCategories;
+	for (const def of DEFAULT_CATEGORY_DEFS) {
+		const exists = nextCategories.some(
+			(category) =>
+				toNameKey(category.id) === toNameKey(def.id) ||
+				toNameKey(category.label) === toNameKey(def.label),
+		);
+		if (!exists) {
+			nextCategories.push({
+				id: def.id,
+				label: def.label,
+				buttons: [],
+			});
+		}
 	}
 
-	const githubCategory = nextCategories[githubIndex];
-	const existingTerminalCommands = new Set(
-		githubCategory.buttons
-			.map((button) => button.terminalCommand?.trim().toLowerCase())
-			.filter((value): value is string => Boolean(value)),
-	);
-
-	for (const defaultButton of GITHUB_DEFAULT_BUTTONS) {
-		const key = defaultButton.terminalCommand?.toLowerCase();
-		if (!key || existingTerminalCommands.has(key)) {
+	for (let i = 0; i < nextCategories.length; i += 1) {
+		const category = nextCategories[i];
+		if (isGitHubCategory(category)) {
+			nextCategories[i] = ensureSeedButtons(category, GITHUB_DEFAULT_BUTTONS);
 			continue;
 		}
-		githubCategory.buttons.push(normalizeButton(defaultButton));
-		existingTerminalCommands.add(key);
+		if (isAiCategory(category)) {
+			nextCategories[i] = ensureSeedButtons(category, AI_DEFAULT_BUTTONS);
+			continue;
+		}
+		if (isUtilsCategory(category)) {
+			nextCategories[i] = ensureSeedButtons(category, UTILS_DEFAULT_BUTTONS);
+		}
 	}
-
-	nextCategories[githubIndex] = githubCategory;
 	return nextCategories;
 }
 
@@ -155,7 +206,7 @@ export function resolveCategoriesFromConfig(
 	legacyButtons: CommandButton[] | undefined,
 ): CommandCategory[] {
 	if (Array.isArray(categories) && categories.length) {
-		return ensureGitHubDefaultButtons(categories.map((c, idx) => ({
+		return ensureDefaultCategoriesAndButtons(categories.map((c, idx) => ({
 			id: c.id || `cat-${idx}`,
 			label: c.label || `Categoria ${idx + 1}`,
 			buttons: Array.isArray(c.buttons) ? c.buttons.map(normalizeButton) : [],
@@ -164,14 +215,18 @@ export function resolveCategoriesFromConfig(
 
 	// Migration: legacy flat buttons array goes into "Preferiti"
 	if (Array.isArray(legacyButtons) && legacyButtons.length) {
-		return ensureGitHubDefaultButtons([
+		return ensureDefaultCategoriesAndButtons([
 			{ id: 'ai', label: 'AI', buttons: legacyButtons.map(normalizeButton) },
 			{ id: 'workspace', label: 'Workspace', buttons: [] },
 			{ id: 'github', label: 'Github', buttons: [] },
+			{ id: 'build-test', label: 'Build/Test', buttons: [] },
+			{ id: 'utils', label: 'Utils', buttons: [] },
 		]);
 	}
 
-	return ensureGitHubDefaultButtons(DEFAULT_CATEGORIES.map((c) => ({ ...c, buttons: [...c.buttons] })));
+	return ensureDefaultCategoriesAndButtons(
+		DEFAULT_CATEGORY_DEFS.map((category) => ({ ...category, buttons: [] })),
+	);
 }
 
 export async function executeButtonCommand(

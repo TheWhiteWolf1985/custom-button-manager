@@ -760,3 +760,18 @@ changes_log:
     risks:
       - "Le interazioni menu in EDH restano da validare manualmente (QuickPick + conferme modali)."
 
+  - step_id: "STEP 006 (TASKS UI tiles globali - 2026-02-20)"
+    summary: "Seed default esteso a categorie base e starter pack minimo senza duplicati."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "src/test/extension.test.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "Sono garantite le categorie AI/Workspace/GitHub/Build-Test/Utils e azioni starter minime (Git + AI + utility) con controlli case-insensitive."
+    risks:
+      - "La verifica operativa click terminale delle azioni starter resta manuale in Extension Development Host."
+

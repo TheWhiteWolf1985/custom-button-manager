@@ -31,7 +31,7 @@ suite('Extension Test Suite', () => {
 			undefined,
 		);
 
-		assert.strictEqual(categories.length, 2);
+		assert.strictEqual(categories.length, 5);
 		assert.strictEqual(categories[0].id, 'cat-0');
 		assert.strictEqual(categories[0].label, 'Categoria 1');
 		assert.strictEqual(categories[0].buttons.length, 1);
@@ -39,8 +39,9 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(categories[0].buttons[0].title, 'Apri terminale');
 		assert.strictEqual(categories[0].buttons[0].description, '');
 		assert.strictEqual(categories[0].buttons[0].icon, '');
-		assert.strictEqual(categories[1].id, 'github');
-		assert.strictEqual(categories[1].buttons.length, 3);
+		assert.ok(categories.some((category) => category.id === 'github'));
+		assert.ok(categories.some((category) => category.id === 'build-test'));
+		assert.ok(categories.some((category) => category.id === 'utils'));
 	});
 
 	test('resolveCategoriesFromConfig migra la chiave legacy buttons', () => {
@@ -48,17 +49,23 @@ suite('Extension Test Suite', () => {
 			{ label: 'Nuovo file', command: 'workbench.action.files.newUntitledFile' },
 		]);
 
-		assert.strictEqual(categories.length, 3);
+		assert.strictEqual(categories.length, 5);
 		assert.strictEqual(categories[0].id, 'ai');
 		assert.strictEqual(categories[0].buttons.length, 1);
 		assert.strictEqual(categories[0].buttons[0].title, 'Nuovo file');
-		assert.strictEqual(categories[1].id, 'workspace');
-		assert.strictEqual(categories[2].id, 'github');
-		assert.strictEqual(categories[2].buttons.length, 3);
+		assert.ok(categories.some((category) => category.id === 'workspace'));
+		assert.ok(categories.some((category) => category.id === 'github'));
+		const githubCategory = categories.find((category) => category.id === 'github');
+		assert.ok(githubCategory);
+		assert.strictEqual(githubCategory?.buttons.length, 3);
 		assert.deepStrictEqual(
-			categories[2].buttons.map((button) => button.terminalCommand),
+			githubCategory?.buttons.map((button) => button.terminalCommand),
 			['git fetch', 'git pull', 'git push'],
 		);
+		const aiCategory = categories.find((category) => category.id === 'ai');
+		assert.ok(aiCategory?.buttons.some((button) => button.title === 'Crea struttura AI'));
+		const utilsCategory = categories.find((category) => category.id === 'utils');
+		assert.ok(utilsCategory?.buttons.some((button) => button.title === 'Reload Window'));
 	});
 
 	test('resolveCategoriesFromConfig usa fallback title/description/icon retrocompatibili', () => {
@@ -108,14 +115,15 @@ suite('Extension Test Suite', () => {
 			undefined,
 		);
 
-		assert.strictEqual(categories.length, 1);
-		assert.strictEqual(categories[0].buttons.length, 3);
+		const githubCategory = categories.find((category) => category.id === 'github');
+		assert.ok(githubCategory);
+		assert.strictEqual(githubCategory?.buttons.length, 3);
 		assert.strictEqual(
-			categories[0].buttons.filter((button) => button.terminalCommand === 'git fetch').length,
+			githubCategory?.buttons.filter((button) => button.terminalCommand === 'git fetch').length,
 			1,
 		);
-		assert.ok(categories[0].buttons.some((button) => button.terminalCommand === 'git pull'));
-		assert.ok(categories[0].buttons.some((button) => button.terminalCommand === 'git push'));
+		assert.ok(githubCategory?.buttons.some((button) => button.terminalCommand === 'git pull'));
+		assert.ok(githubCategory?.buttons.some((button) => button.terminalCommand === 'git push'));
 	});
 
 	test('executeButtonCommand gestisce args array/object/assenti', async () => {

@@ -192,7 +192,7 @@ Vincoli/Decisioni (da utente):
 ---
 
 ## STEP 006 — Starter pack minimo (3–5 azioni) + categorie base (AI, Workspace, GitHub, Build/Test, Utils)
-- Status: TODO
+- Status: DONE
 - Goal: dare all’utente un set minimo subito usabile, senza riempire la sidebar di roba.
 - Scope:
   - Seed defaults
@@ -216,6 +216,18 @@ Vincoli/Decisioni (da utente):
   - Click sulle azioni terminal apre terminal e lancia comando (dove previsto)
 - Commit message:
   - `feat(defaults): seed minimal starter actions across default categories`
+- What changed:
+  - Il seed default garantisce ora le categorie base `AI`, `Workspace`, `GitHub`, `Build/Test`, `Utils` (create solo se mancanti).
+  - Aggiunto starter pack minimo: GitHub (`Fetch`, `Pull`, `Push`), AI (`Crea struttura AI`), Utils (`Reload Window`).
+  - Applicate regole anti-duplicato case-insensitive in fase seed, senza creare pulsanti duplicati.
+  - Test aggiornati per riflettere nuove categorie default e azioni starter.
+- Files touched:
+  - `src/extension.ts`
+  - `src/test/extension.test.ts`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
 
 ---
 
