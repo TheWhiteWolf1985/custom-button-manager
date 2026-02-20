@@ -17,3 +17,5 @@ AI/
 .vscode/
 .vscode-test/
 .vscode-test-fresh-cache/
+*.code-workspace
+scripts/run-vscode-tests.mjs
