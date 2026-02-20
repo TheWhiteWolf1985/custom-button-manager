@@ -256,6 +256,9 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			case 'ready':
 				this.postCategories();
 				break;
+			case 'addCategory':
+				await this.promptAddCategory();
+				break;
 			case 'add':
 				await this.promptAddOrEdit(undefined, message.categoryIndex);
 				break;
@@ -269,6 +272,35 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 				break;
 			}
 		});
+	}
+
+	private async promptAddCategory(): Promise<void> {
+		const categories = this.getCategories();
+		const name = await vscode.window.showInputBox({
+			prompt: 'Nome categoria',
+			placeHolder: 'Nuova categoria',
+			ignoreFocusOut: true,
+			validateInput: (value) => (!value.trim() ? 'Il nome categoria è obbligatorio' : undefined),
+		});
+		if (!name) {
+			return;
+		}
+		const nextLabel = name.trim();
+		if (hasCategoryNameCollision(categories, nextLabel)) {
+			void vscode.window.showErrorMessage(`Esiste già una categoria "${nextLabel}" (case-insensitive).`);
+			return;
+		}
+		const nextIdBase = nextLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'category';
+		let nextId = nextIdBase;
+		let index = 2;
+		const usedIds = new Set(categories.map((category) => category.id));
+		while (usedIds.has(nextId)) {
+			nextId = `${nextIdBase}-${index}`;
+			index += 1;
+		}
+		const nextCategories = categories.concat([{ id: nextId, label: nextLabel, buttons: [] }]);
+		await this.saveCategories(nextCategories);
+		this.postCategories();
 	}
 
 	public async promptAddOrEdit(existing?: CommandButton, categoryIndex?: number, buttonIndex?: number): Promise<void> {
@@ -685,9 +717,26 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			font-style: italic;
 			padding: 8px 0 0 4px;
 		}
+		.sidebar-header {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			margin-bottom: 10px;
+		}
+		.sidebar-title {
+			font-size: 13px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.4px;
+			opacity: 0.9;
+		}
 	</style>
 </head>
 <body>
+	<div class="sidebar-header">
+		<div class="sidebar-title">Commands</div>
+		<button id="add-category" class="button" type="button"><span class="codicon codicon-add"></span>Aggiungi categoria</button>
+	</div>
 	<div id="categories" class="categories"></div>
 	<div id="empty" class="empty" hidden>Nessun comando. Usa + sulla categoria per aggiungerne uno.</div>
 		<script nonce="${nonce}">
@@ -697,6 +746,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 		const categoriesEl = document.getElementById('categories');
 		const emptyEl = document.getElementById('empty');
+		const addCategoryEl = document.getElementById('add-category');
 
 			const sectionByCategoryId = new Map();
 			const sectionState = new Map();
@@ -857,6 +907,10 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 					categories = Array.isArray(updated) ? updated : [];
 					render();
 				}
+			});
+
+			addCategoryEl?.addEventListener('click', () => {
+				vscode.postMessage({ type: 'addCategory' });
 			});
 
 			vscode.postMessage({ type: 'ready' });

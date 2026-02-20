@@ -732,3 +732,17 @@ changes_log:
     risks:
       - "La validazione end-to-end su add/rename categoria verra' completata quando i flussi UI saranno esposti (STEP 004/005)."
 
+  - step_id: "STEP 004 (TASKS UI tiles globali - 2026-02-20)"
+    summary: "Aggiunta azione globale `Aggiungi categoria` nell'header webview."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "Il click header invia messaggio `addCategory` e crea categoria vuota solo se il nome e' univoco case-insensitive."
+    risks:
+      - "La verifica interattiva del flusso UI add-category resta manuale in EDH."
+

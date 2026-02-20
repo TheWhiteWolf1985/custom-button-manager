@@ -116,7 +116,7 @@ Vincoli/Decisioni (da utente):
 ---
 
 ## STEP 004 — Pulsante globale “Aggiungi categoria” in cima (sotto header estensione)
-- Status: TODO
+- Status: DONE
 - Goal: aggiungere un controllo globale sempre visibile “Aggiungi categoria”.
 - Scope:
   - Webview top area (header)
@@ -133,6 +133,17 @@ Vincoli/Decisioni (da utente):
   - Validazione unicità rispettata
 - Commit message:
   - `feat(ui): add global Add Category action in header`
+- What changed:
+  - Inserito header webview con azione globale sempre visibile `Aggiungi categoria`.
+  - Introdotto nuovo messaggio webview `addCategory` gestito lato extension.
+  - Implementato flusso creazione categoria con input, validazione unicità case-insensitive e save su configurazione workspace.
+  - In caso di duplicato viene mostrato errore e la categoria non viene creata.
+- Files touched:
+  - `src/extension.ts`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
 
 ---
 
