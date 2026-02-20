@@ -639,3 +639,19 @@ changes_log:
     risks:
       - "Lo schema resta permissivo: eventuali valori non stringa in settings continuano a richiedere validazione difensiva lato UI."
 
+  - step_id: "STEP 003 (TASKS GitHub tiles - 2026-02-20)"
+    summary: "Aggiunto supporto esecuzione `terminalCommand` con terminale VS Code dedicato."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "src/test/extension.test.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "I bottoni con `terminalCommand` aprono/riusano terminale `Custom Button Manager` e inviano il comando con cwd sulla prima workspace folder."
+    risks:
+      - "La verifica dell'effettiva apertura terminale e cwd corretto resta manuale in EDH."
+

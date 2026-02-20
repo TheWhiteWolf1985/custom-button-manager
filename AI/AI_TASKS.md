@@ -93,7 +93,7 @@ Assunzioni operative:
 ---
 
 ## STEP 003 — Esecuzione in terminale: introdurre `terminalCommand` (push/pull/fetch devono usare terminale)
-- Status: TODO
+- Status: DONE
 - Goal: Permettere a un button di eseguire un comando nel terminale VS Code (non solo `vscode.commands.executeCommand`).
 - Scope:
   - Logica di esecuzione del click (provider/extension runtime)
@@ -116,6 +116,19 @@ Assunzioni operative:
   - Nessun crash quando workspace non è aperta: messaggio utente chiaro
 - Commit message:
   - `feat(core): support terminalCommand buttons executed via VS Code terminal`
+- What changed:
+  - Esteso `CommandButton` con campo opzionale `terminalCommand` e introdotta `executeButtonAction` per instradare correttamente azioni terminale vs command-id.
+  - In `CommandViewProvider.executeButton` aggiunta esecuzione terminale con riuso/creazione terminale dedicato (`Custom Button Manager`) e `cwd` sulla prima workspace folder.
+  - Aggiunta gestione errore esplicita quando manca una workspace folder aperta (`Apri una cartella workspace...`) senza crash.
+  - I pulsanti esistenti basati su `command` continuano a usare `vscode.commands.executeCommand`.
+- Files touched:
+  - `src/extension.ts`
+  - `src/test/extension.test.ts`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - `npm test` (PASS)
+  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
 
 ---
 

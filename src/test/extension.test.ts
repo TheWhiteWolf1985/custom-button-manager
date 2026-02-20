@@ -3,7 +3,7 @@ import * as assert from 'assert';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
-import { executeButtonCommand, resolveCategoriesFromConfig } from '../extension';
+import { executeButtonAction, executeButtonCommand, resolveCategoriesFromConfig } from '../extension';
 
 suite('Extension Test Suite', () => {
 	vscode.window.showInformationMessage('Start all tests.');
@@ -98,5 +98,32 @@ suite('Extension Test Suite', () => {
 		assert.deepStrictEqual(calls[0], { command: 'ext.array', args: ['a', 1] });
 		assert.deepStrictEqual(calls[1], { command: 'ext.object', args: [{ id: 7 }] });
 		assert.deepStrictEqual(calls[2], { command: 'ext.noargs', args: [] });
+	});
+
+	test('executeButtonAction usa terminalCommand senza interferire con command id classici', async () => {
+		const commandCalls: Array<{ command: string; args: unknown[] }> = [];
+		const terminalCalls: string[] = [];
+		const commandExecutor = async (command: string, ...args: unknown[]) => {
+			commandCalls.push({ command, args });
+			return undefined;
+		};
+		const terminalExecutor = async (terminalCommand: string) => {
+			terminalCalls.push(terminalCommand);
+		};
+
+		await executeButtonAction(
+			{ label: 'Fetch', command: 'ignored.command', terminalCommand: 'git fetch' },
+			commandExecutor,
+			terminalExecutor,
+		);
+		await executeButtonAction(
+			{ label: 'NoTerm', command: 'workbench.action.files.newUntitledFile' },
+			commandExecutor,
+			terminalExecutor,
+		);
+
+		assert.deepStrictEqual(terminalCalls, ['git fetch']);
+		assert.strictEqual(commandCalls.length, 1);
+		assert.strictEqual(commandCalls[0].command, 'workbench.action.files.newUntitledFile');
 	});
 });

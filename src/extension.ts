@@ -5,6 +5,7 @@ type CommandButton = {
 	title?: string;
 	description?: string;
 	command: string;
+	terminalCommand?: string;
 	icon?: string;
 	args?: unknown;
 };
@@ -19,6 +20,7 @@ const CONFIG_SECTION = 'myCommandSidebar';
 const CONFIG_KEY = 'categories';
 const LEGACY_KEY = 'buttons';
 const VIEW_ID = 'myCommandSidebar.view';
+const TERMINAL_NAME = 'Custom Button Manager';
 
 const DEFAULT_CATEGORIES: CommandCategory[] = [
 	{ id: 'favorites', label: 'Preferiti', buttons: [] },
@@ -79,6 +81,21 @@ export async function executeButtonCommand(
 	await executor(button.command);
 }
 
+export async function executeButtonAction(
+	button: CommandButton,
+	commandExecutor: (command: string, ...args: unknown[]) => Promise<unknown> | PromiseLike<unknown>,
+	terminalExecutor?: (terminalCommand: string) => Promise<void> | void,
+): Promise<void> {
+	const terminalCommand = button.terminalCommand?.trim();
+	if (terminalCommand) {
+		if (terminalExecutor) {
+			await terminalExecutor(terminalCommand);
+		}
+		return;
+	}
+	await executeButtonCommand(button, commandExecutor);
+}
+
 export function activate(context: vscode.ExtensionContext) {
 	const provider = new CommandViewProvider(context);
 
@@ -101,6 +118,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 	private view?: vscode.WebviewView;
 	private configListener?: vscode.Disposable;
 	private categoriesCache?: CommandCategory[];
+	private commandTerminal?: vscode.Terminal;
 
 	constructor(private readonly context: vscode.ExtensionContext) {}
 
@@ -278,10 +296,40 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 		}
 
 		try {
-			await executeButtonCommand(button, vscode.commands.executeCommand);
+			await executeButtonAction(
+				button,
+				vscode.commands.executeCommand,
+				async (terminalCommand) => {
+					const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+					if (!workspaceFolder) {
+						void vscode.window.showErrorMessage('Apri una cartella workspace per eseguire comandi Git dal terminale.');
+						return;
+					}
+					const terminal = this.getOrCreateCommandTerminal(workspaceFolder.uri);
+					terminal.show(true);
+					terminal.sendText(terminalCommand, true);
+				},
+			);
 		} catch (error) {
 			void vscode.window.showErrorMessage(`Esecuzione di "${button.command}" non riuscita: ${String(error)}`);
 		}
+	}
+
+	private getOrCreateCommandTerminal(cwd: vscode.Uri): vscode.Terminal {
+		const existing =
+			this.commandTerminal && this.commandTerminal.exitStatus === undefined
+				? this.commandTerminal
+				: vscode.window.terminals.find((terminal) => terminal.name === TERMINAL_NAME && terminal.exitStatus === undefined);
+		if (existing) {
+			this.commandTerminal = existing;
+			return existing;
+		}
+		const terminal = vscode.window.createTerminal({
+			name: TERMINAL_NAME,
+			cwd,
+		});
+		this.commandTerminal = terminal;
+		return terminal;
 	}
 
 	private getCategories(): CommandCategory[] {
