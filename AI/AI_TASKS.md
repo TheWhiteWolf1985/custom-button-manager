@@ -148,7 +148,7 @@ Vincoli/Decisioni (da utente):
 ---
 
 ## STEP 005 — Header categoria: sostituire “+” con menu ⋮ (QuickPick: Elimina / Rinomina / Aggiungi pulsante)
-- Status: TODO
+- Status: DONE
 - Goal: rimuovere il pulsante “+” dall’accordion header e sostituirlo con ⋮; azioni via menu contestuale con iconografia standard.
 - Scope:
   - Webview accordion header
@@ -177,6 +177,17 @@ Vincoli/Decisioni (da utente):
   - Rename blocca duplicati case-insensitive
 - Commit message:
   - `feat(ui): replace header add button with kebab menu for category actions`
+- What changed:
+  - Rimosso il pulsante `+` dall’header categoria e sostituito con pulsante `⋮` (kebab).
+  - Aggiunto menu categoria via QuickPick con azioni: `Aggiungi pulsante`, `Rinomina`, `Elimina`.
+  - Delete ora richiede conferma hard quando la categoria contiene pulsanti (con conteggio).
+  - Rename usa validazione unicità case-insensitive e blocca i duplicati.
+- Files touched:
+  - `src/extension.ts`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
 
 ---
 

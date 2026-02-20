@@ -262,6 +262,9 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			case 'add':
 				await this.promptAddOrEdit(undefined, message.categoryIndex);
 				break;
+			case 'categoryMenu':
+				await this.showCategoryMenu(message.categoryIndex);
+				break;
 			case 'execute':
 				await this.executeButton(message.categoryIndex, message.buttonIndex);
 				break;
@@ -460,6 +463,68 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			);
 		} catch (error) {
 			void vscode.window.showErrorMessage(`Esecuzione di "${button.command}" non riuscita: ${String(error)}`);
+		}
+	}
+
+	private async showCategoryMenu(categoryIndex: number): Promise<void> {
+		const categories = this.getCategories();
+		const category = categories[categoryIndex];
+		if (!category) {
+			return;
+		}
+
+		const picked = await vscode.window.showQuickPick(
+			['Aggiungi pulsante', 'Rinomina', 'Elimina'],
+			{
+				placeHolder: `Azioni categoria "${category.label}"`,
+				ignoreFocusOut: true,
+			},
+		);
+		if (!picked) {
+			return;
+		}
+
+		if (picked === 'Aggiungi pulsante') {
+			await this.promptAddOrEdit(undefined, categoryIndex);
+			return;
+		}
+
+		if (picked === 'Rinomina') {
+			const nextName = await vscode.window.showInputBox({
+				prompt: 'Nuovo nome categoria',
+				value: category.label,
+				ignoreFocusOut: true,
+				validateInput: (value) => (!value.trim() ? 'Il nome categoria è obbligatorio' : undefined),
+			});
+			if (!nextName) {
+				return;
+			}
+			const nextLabel = nextName.trim();
+			if (hasCategoryNameCollision(categories, nextLabel, categoryIndex)) {
+				void vscode.window.showErrorMessage(`Esiste già una categoria "${nextLabel}" (case-insensitive).`);
+				return;
+			}
+			const nextCategories = categories.slice();
+			nextCategories[categoryIndex] = { ...category, label: nextLabel };
+			await this.saveCategories(nextCategories);
+			this.postCategories();
+			return;
+		}
+
+		if (picked === 'Elimina') {
+			if (category.buttons.length > 0) {
+				const confirmHard = await vscode.window.showWarningMessage(
+					`La categoria "${category.label}" contiene ${category.buttons.length} pulsanti. Confermi eliminazione definitiva?`,
+					{ modal: true },
+					'Elimina categoria',
+				);
+				if (confirmHard !== 'Elimina categoria') {
+					return;
+				}
+			}
+			const nextCategories = categories.filter((_, index) => index !== categoryIndex);
+			await this.saveCategories(nextCategories);
+			this.postCategories();
 		}
 	}
 
@@ -773,20 +838,21 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 				count.style.opacity = '0.7';
 					count.textContent = cat.buttons?.length ? \`(\${cat.buttons.length})\` : '(0)';
 
-				const headerAdd = document.createElement('button');
-				headerAdd.className = 'button';
-				headerAdd.type = 'button';
-				headerAdd.style.padding = '4px 8px';
-				headerAdd.style.fontSize = '12px';
-				headerAdd.innerHTML = '<span class="codicon codicon-add"></span>';
-				headerAdd.addEventListener('click', (event) => {
+				const headerMenu = document.createElement('button');
+				headerMenu.className = 'button';
+				headerMenu.type = 'button';
+				headerMenu.style.padding = '4px 8px';
+				headerMenu.style.fontSize = '12px';
+				headerMenu.textContent = '⋮';
+				headerMenu.title = 'Azioni categoria';
+				headerMenu.addEventListener('click', (event) => {
 					event.stopPropagation();
-					vscode.postMessage({ type: 'add', categoryIndex: catIndex });
+					vscode.postMessage({ type: 'categoryMenu', categoryIndex: catIndex });
 				});
 
 				const actions = document.createElement('div');
 				actions.className = 'category-actions';
-				actions.append(headerAdd);
+				actions.append(headerMenu);
 
 				header.append(caret, title, count, actions);
 				header.addEventListener('click', () => {

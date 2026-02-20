@@ -746,3 +746,17 @@ changes_log:
     risks:
       - "La verifica interattiva del flusso UI add-category resta manuale in EDH."
 
+  - step_id: "STEP 005 (TASKS UI tiles globali - 2026-02-20)"
+    summary: "Sostituito `+` categoria con menu kebab `⋮` e azioni contestuali."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "Il menu categoria espone add/rename/delete; delete richiede conferma hard se la categoria non e' vuota."
+    risks:
+      - "Le interazioni menu in EDH restano da validare manualmente (QuickPick + conferme modali)."
+
