@@ -775,3 +775,18 @@ changes_log:
     risks:
       - "La verifica operativa click terminale delle azioni starter resta manuale in Extension Development Host."
 
+  - step_id: "STEP 007 (TASKS UI tiles globali - 2026-02-20)"
+    summary: "Aggiunta azione PowerShell per bootstrap struttura AI da template `AI_structure`."
+    commit: ""
+    files:
+      - "scripts/create-ai-structure.ps1"
+      - "src/extension.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "F5 / Run Extension (manuale Windows richiesto, non eseguito via CLI)"
+    notes: "Lo script crea `AI/` nel workspace e rinomina eventuale `AI/` esistente in `AI_new` con suffix sicuro; la tile AI risolve runtime `-File` e `-WorkspacePath`."
+    risks:
+      - "La validazione end-to-end su file system workspace resta manuale in EDH/Windows."
+

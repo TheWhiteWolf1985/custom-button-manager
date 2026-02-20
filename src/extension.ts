@@ -1,4 +1,5 @@
-ï»¿import * as vscode from 'vscode';
+import * as vscode from 'vscode';
+import * as path from 'node:path';
 
 type CommandButton = {
 	label: string;
@@ -21,6 +22,8 @@ const CONFIG_KEY = 'categories';
 const LEGACY_KEY = 'buttons';
 const VIEW_ID = 'myCommandSidebar.view';
 const TERMINAL_NAME = 'Custom Button Manager';
+const AI_SCRIPT_PLACEHOLDER = '__AI_CREATE_STRUCTURE_SCRIPT__';
+const AI_WORKSPACE_PLACEHOLDER = '__AI_WORKSPACE_PATH__';
 
 const DEFAULT_CATEGORY_DEFS: Array<{ id: string; label: string }> = [
 	{ id: 'ai', label: 'AI' },
@@ -64,7 +67,7 @@ const AI_DEFAULT_BUTTONS: CommandButton[] = [
 		description: 'Crea AI/ e i file base del kit',
 		icon: 'folder-library',
 		command: 'workbench.action.terminal.new',
-		terminalCommand: 'powershell -ExecutionPolicy Bypass -File scripts/create-ai-structure.ps1',
+		terminalCommand: `powershell -ExecutionPolicy Bypass -File "${AI_SCRIPT_PLACEHOLDER}" -WorkspacePath "${AI_WORKSPACE_PLACEHOLDER}"`,
 	},
 ];
 
@@ -338,14 +341,14 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			prompt: 'Nome categoria',
 			placeHolder: 'Nuova categoria',
 			ignoreFocusOut: true,
-			validateInput: (value) => (!value.trim() ? 'Il nome categoria Ã¨ obbligatorio' : undefined),
+			validateInput: (value) => (!value.trim() ? 'Il nome categoria è obbligatorio' : undefined),
 		});
 		if (!name) {
 			return;
 		}
 		const nextLabel = name.trim();
 		if (hasCategoryNameCollision(categories, nextLabel)) {
-			void vscode.window.showErrorMessage(`Esiste giÃ  una categoria "${nextLabel}" (case-insensitive).`);
+			void vscode.window.showErrorMessage(`Esiste già una categoria "${nextLabel}" (case-insensitive).`);
 			return;
 		}
 		const nextIdBase = nextLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'category';
@@ -388,14 +391,14 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			prompt: 'Etichetta pulsante',
 			value: existing?.label ?? existing?.title ?? '',
 			ignoreFocusOut: true,
-			validateInput: (value) => (!value.trim() ? 'L\'etichetta Ã¨ obbligatoria' : undefined),
+			validateInput: (value) => (!value.trim() ? 'L\'etichetta è obbligatoria' : undefined),
 		});
 		if (!label) {
 			return;
 		}
 		const normalizedLabel = label.trim();
 		if (hasButtonNameCollision(targetCategory, normalizedLabel, buttonIndex)) {
-			void vscode.window.showErrorMessage(`Esiste giÃ  un pulsante "${normalizedLabel}" nella categoria "${targetCategory.label}" (case-insensitive).`);
+			void vscode.window.showErrorMessage(`Esiste già un pulsante "${normalizedLabel}" nella categoria "${targetCategory.label}" (case-insensitive).`);
 			return;
 		}
 
@@ -403,7 +406,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			prompt: 'Command id (esempio: workbench.action.files.newUntitledFile)',
 			value: existing?.command ?? '',
 			ignoreFocusOut: true,
-			validateInput: (value) => (!value.trim() ? 'Il command id Ã¨ obbligatorio' : undefined),
+			validateInput: (value) => (!value.trim() ? 'Il command id è obbligatorio' : undefined),
 		});
 		if (!command) {
 			return;
@@ -511,9 +514,24 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 						void vscode.window.showErrorMessage('Apri una cartella workspace per eseguire comandi Git dal terminale.');
 						return;
 					}
+					if (
+						process.platform !== 'win32' &&
+						terminalCommand.includes(AI_SCRIPT_PLACEHOLDER)
+					) {
+						void vscode.window.showErrorMessage('Funzione disponibile solo su Windows/PowerShell.');
+						return;
+					}
+					const scriptPath = path.join(
+						this.context.extensionPath,
+						'scripts',
+						'create-ai-structure.ps1',
+					);
+					const resolvedTerminalCommand = terminalCommand
+						.replaceAll(AI_SCRIPT_PLACEHOLDER, scriptPath)
+						.replaceAll(AI_WORKSPACE_PLACEHOLDER, workspaceFolder.uri.fsPath);
 					const terminal = this.getOrCreateCommandTerminal(workspaceFolder.uri);
 					terminal.show(true);
-					terminal.sendText(terminalCommand, true);
+					terminal.sendText(resolvedTerminalCommand, true);
 				},
 			);
 		} catch (error) {
@@ -549,14 +567,14 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 				prompt: 'Nuovo nome categoria',
 				value: category.label,
 				ignoreFocusOut: true,
-				validateInput: (value) => (!value.trim() ? 'Il nome categoria Ã¨ obbligatorio' : undefined),
+				validateInput: (value) => (!value.trim() ? 'Il nome categoria è obbligatorio' : undefined),
 			});
 			if (!nextName) {
 				return;
 			}
 			const nextLabel = nextName.trim();
 			if (hasCategoryNameCollision(categories, nextLabel, categoryIndex)) {
-				void vscode.window.showErrorMessage(`Esiste giÃ  una categoria "${nextLabel}" (case-insensitive).`);
+				void vscode.window.showErrorMessage(`Esiste già una categoria "${nextLabel}" (case-insensitive).`);
 				return;
 			}
 			const nextCategories = categories.slice();
@@ -898,7 +916,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 				headerMenu.type = 'button';
 				headerMenu.style.padding = '4px 8px';
 				headerMenu.style.fontSize = '12px';
-				headerMenu.textContent = 'â‹®';
+				headerMenu.textContent = '?';
 				headerMenu.title = 'Azioni categoria';
 				headerMenu.addEventListener('click', (event) => {
 					event.stopPropagation();
@@ -937,7 +955,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 						const menu = document.createElement('button');
 						menu.className = 'menu-btn';
-						menu.textContent = 'â‹¯';
+						menu.textContent = '?';
 						menu.title = 'Modifica o elimina';
 						menu.addEventListener('click', (event) => {
 							event.stopPropagation();
@@ -1050,4 +1068,5 @@ function getNonce(): string {
 	}
 	return text;
 }
+
 

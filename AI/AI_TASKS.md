@@ -232,7 +232,7 @@ Vincoli/Decisioni (da utente):
 ---
 
 ## STEP 007 — Categoria AI: pulsante “Crea struttura AI” che lancia PowerShell script
-- Status: TODO
+- Status: DONE
 - Goal: un pulsante in categoria AI che crea la struttura AI nel workspace attivo eseguendo uno script PowerShell.
 - Scope:
   - Script PowerShell (nuovo file in repo, versionato)
@@ -267,6 +267,18 @@ Vincoli/Decisioni (da utente):
   - `feat(ai): add PowerShell action to generate AI folder structure in workspace`
 - Notes/Inputs:
   - `AI.rar` deve essere reso disponibile in repo (es. `templates/AI/` estratto) e usato come sorgente contenuti.
+- What changed:
+  - Aggiunto script versionato `scripts/create-ai-structure.ps1` che crea `AI/` da template `AI_structure` nel workspace target.
+  - Se `AI/` esiste già, lo script rinomina solo la top-level in `AI_new` con suffix incrementale (`AI_new_2`, `AI_new_3`, ...).
+  - La tile default `Crea struttura AI` ora invoca PowerShell con `-ExecutionPolicy Bypass -File ... -WorkspacePath ...`.
+  - Su non-Windows l’azione mostra errore user-friendly e non esegue side-effect.
+- Files touched:
+  - `scripts/create-ai-structure.ps1`
+  - `src/extension.ts`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - `F5 / Run Extension` (manuale Windows richiesto, non eseguito via CLI)
 
 ---
 
