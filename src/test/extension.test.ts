@@ -43,7 +43,7 @@ suite('Extension Test Suite', () => {
 		]);
 
 		assert.strictEqual(categories.length, 3);
-		assert.strictEqual(categories[0].id, 'favorites');
+		assert.strictEqual(categories[0].id, 'ai');
 		assert.strictEqual(categories[0].buttons.length, 1);
 		assert.strictEqual(categories[0].buttons[0].title, 'Nuovo file');
 		assert.strictEqual(categories[1].id, 'workspace');

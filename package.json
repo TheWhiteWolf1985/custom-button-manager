@@ -51,7 +51,7 @@
           "type": "array",
           "description": "Categorie della sidebar Commands, ciascuna con la propria lista di pulsanti.",
           "default": [
-            { "id": "favorites", "label": "Preferiti", "buttons": [] },
+            { "id": "ai", "label": "AI", "buttons": [] },
             { "id": "workspace", "label": "Workspace", "buttons": [] },
             { "id": "github", "label": "Github", "buttons": [] }
           ],

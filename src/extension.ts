@@ -23,7 +23,7 @@ const VIEW_ID = 'myCommandSidebar.view';
 const TERMINAL_NAME = 'Custom Button Manager';
 
 const DEFAULT_CATEGORIES: CommandCategory[] = [
-	{ id: 'favorites', label: 'Preferiti', buttons: [] },
+	{ id: 'ai', label: 'AI', buttons: [] },
 	{ id: 'workspace', label: 'Workspace', buttons: [] },
 	{ id: 'github', label: 'Github', buttons: [] },
 ];
@@ -123,7 +123,7 @@ export function resolveCategoriesFromConfig(
 	// Migration: legacy flat buttons array goes into "Preferiti"
 	if (Array.isArray(legacyButtons) && legacyButtons.length) {
 		return ensureGitHubDefaultButtons([
-			{ id: 'favorites', label: 'Preferiti', buttons: legacyButtons.map(normalizeButton) },
+			{ id: 'ai', label: 'AI', buttons: legacyButtons.map(normalizeButton) },
 			{ id: 'workspace', label: 'Workspace', buttons: [] },
 			{ id: 'github', label: 'Github', buttons: [] },
 		]);

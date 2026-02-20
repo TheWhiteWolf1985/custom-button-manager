@@ -47,7 +47,7 @@ Vincoli/Decisioni (da utente):
 ---
 
 ## STEP 002 — Rinominare “Preferiti” → “AI” (refactor semplice, no migrazione complessa)
-- Status: TODO
+- Status: DONE
 - Goal: sostituire naming in UI e seed defaults: categoria “Preferiti” diventa “AI”.
 - Scope:
   - Seed categorie default / label UI
@@ -64,6 +64,19 @@ Vincoli/Decisioni (da utente):
   - “AI” compare al suo posto
 - Commit message:
   - `chore(ui): rename default category Preferiti to AI`
+- What changed:
+  - Rinominata la categoria default runtime da `Preferiti` a `AI` (`id: ai`, `label: AI`).
+  - Aggiornata anche la default configuration dichiarata in `package.json` (`myCommandSidebar.categories`).
+  - Allineata la migrazione legacy (`buttons`) per creare la categoria `AI` invece di `Preferiti`.
+  - Test aggiornato sul valore `id` della prima categoria migrata.
+- Files touched:
+  - `src/extension.ts`
+  - `package.json`
+  - `src/test/extension.test.ts`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
 
 ---
 

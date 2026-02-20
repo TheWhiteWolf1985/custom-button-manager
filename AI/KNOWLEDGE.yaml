@@ -700,3 +700,19 @@ changes_log:
     risks:
       - "La verifica UX no-flicker su tutte le categorie resta manuale in Extension Development Host."
 
+  - step_id: "STEP 002 (TASKS UI tiles globali - 2026-02-20)"
+    summary: "Rinominata categoria default `Preferiti` in `AI` su runtime e configurazione dichiarata."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "package.json"
+      - "src/test/extension.test.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "Il seed default usa ora `id: ai` / `label: AI`; anche il fallback legacy `buttons` crea la categoria AI."
+    risks:
+      - "Nessuna migrazione avanzata dei workspace preesistenti: categorie gia' salvate con label storica restano invariate finche' non modificate."
+
