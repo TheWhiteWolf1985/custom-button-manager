@@ -655,3 +655,19 @@ changes_log:
     risks:
       - "La verifica dell'effettiva apertura terminale e cwd corretto resta manuale in EDH."
 
+  - step_id: "STEP 004 (TASKS GitHub tiles - 2026-02-20)"
+    summary: "Aggiunto seed default GitHub per fetch/pull/push con anti-duplicato."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "src/test/extension.test.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "La categoria GitHub viene creata se assente e completata con azioni default mancanti (`git fetch/pull/push`) senza duplicare pulsanti gia' presenti."
+    risks:
+      - "I test automatici coprono il seed dati ma non verificano visualmente le icone/click terminale in EDH."
+

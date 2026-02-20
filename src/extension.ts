@@ -28,39 +28,108 @@ const DEFAULT_CATEGORIES: CommandCategory[] = [
 	{ id: 'github', label: 'Github', buttons: [] },
 ];
 
+const GITHUB_DEFAULT_BUTTONS: CommandButton[] = [
+	{
+		label: 'Git Fetch',
+		title: 'Fetch',
+		description: 'Aggiorna refs dal remoto',
+		icon: 'arrow-down',
+		command: 'workbench.action.terminal.new',
+		terminalCommand: 'git fetch',
+	},
+	{
+		label: 'Git Pull',
+		title: 'Pull',
+		description: 'Scarica e unisci dal remoto',
+		icon: 'sync',
+		command: 'workbench.action.terminal.new',
+		terminalCommand: 'git pull',
+	},
+	{
+		label: 'Git Push',
+		title: 'Push',
+		description: 'Invia commit al remoto',
+		icon: 'arrow-up',
+		command: 'workbench.action.terminal.new',
+		terminalCommand: 'git push',
+	},
+];
+
+function normalizeButton(button: CommandButton): CommandButton {
+	const title = button.title?.trim() || button.label?.trim() || 'Untitled';
+	const terminalCommand = button.terminalCommand?.trim();
+	return {
+		...button,
+		title,
+		label: button.label?.trim() || title,
+		description: button.description ?? '',
+		icon: button.icon ?? '',
+		terminalCommand: terminalCommand || undefined,
+	};
+}
+
+function isGitHubCategory(category: CommandCategory): boolean {
+	return category.id?.toLowerCase() === 'github' || category.label?.toLowerCase() === 'github';
+}
+
+function ensureGitHubDefaultButtons(categories: CommandCategory[]): CommandCategory[] {
+	const nextCategories = categories.map((category) => ({
+		...category,
+		buttons: category.buttons.map((button) => ({ ...button })),
+	}));
+
+	let githubIndex = nextCategories.findIndex(isGitHubCategory);
+	if (githubIndex < 0) {
+		nextCategories.push({
+			id: 'github',
+			label: 'Github',
+			buttons: GITHUB_DEFAULT_BUTTONS.map(normalizeButton),
+		});
+		return nextCategories;
+	}
+
+	const githubCategory = nextCategories[githubIndex];
+	const existingTerminalCommands = new Set(
+		githubCategory.buttons
+			.map((button) => button.terminalCommand?.trim().toLowerCase())
+			.filter((value): value is string => Boolean(value)),
+	);
+
+	for (const defaultButton of GITHUB_DEFAULT_BUTTONS) {
+		const key = defaultButton.terminalCommand?.toLowerCase();
+		if (!key || existingTerminalCommands.has(key)) {
+			continue;
+		}
+		githubCategory.buttons.push(normalizeButton(defaultButton));
+		existingTerminalCommands.add(key);
+	}
+
+	nextCategories[githubIndex] = githubCategory;
+	return nextCategories;
+}
+
 export function resolveCategoriesFromConfig(
 	categories: CommandCategory[] | undefined,
 	legacyButtons: CommandButton[] | undefined,
 ): CommandCategory[] {
-	const normalizeButton = (button: CommandButton): CommandButton => {
-		const title = button.title?.trim() || button.label?.trim() || 'Untitled';
-		return {
-			...button,
-			title,
-			label: button.label?.trim() || title,
-			description: button.description ?? '',
-			icon: button.icon ?? '',
-		};
-	};
-
 	if (Array.isArray(categories) && categories.length) {
-		return categories.map((c, idx) => ({
+		return ensureGitHubDefaultButtons(categories.map((c, idx) => ({
 			id: c.id || `cat-${idx}`,
 			label: c.label || `Categoria ${idx + 1}`,
 			buttons: Array.isArray(c.buttons) ? c.buttons.map(normalizeButton) : [],
-		}));
+		})));
 	}
 
 	// Migration: legacy flat buttons array goes into "Preferiti"
 	if (Array.isArray(legacyButtons) && legacyButtons.length) {
-		return [
+		return ensureGitHubDefaultButtons([
 			{ id: 'favorites', label: 'Preferiti', buttons: legacyButtons.map(normalizeButton) },
 			{ id: 'workspace', label: 'Workspace', buttons: [] },
 			{ id: 'github', label: 'Github', buttons: [] },
-		];
+		]);
 	}
 
-	return DEFAULT_CATEGORIES.map((c) => ({ ...c, buttons: [...c.buttons] }));
+	return ensureGitHubDefaultButtons(DEFAULT_CATEGORIES.map((c) => ({ ...c, buttons: [...c.buttons] })));
 }
 
 export async function executeButtonCommand(

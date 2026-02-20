@@ -133,7 +133,7 @@ Assunzioni operative:
 ---
 
 ## STEP 004 — Default GitHub actions: aggiungere push/pull/fetch preconfigurate
-- Status: TODO
+- Status: DONE
 - Goal: Nel submenù GitHub, creare di default le tiles base:
   - `Git Fetch` → `git fetch`
   - `Git Pull` → `git pull`
@@ -160,6 +160,19 @@ Assunzioni operative:
   - Click su ciascuna tile esegue il comando in terminale (cwd workspace)
 - Commit message:
   - `feat(defaults): add GitHub default tiles for fetch/pull/push`
+- What changed:
+  - Introdotto seed default per categoria GitHub con 3 azioni (`git fetch`, `git pull`, `git push`) valorizzando `icon`, `title`, `description` e `terminalCommand`.
+  - Inizializzazione retrocompatibile: se categoria GitHub manca viene creata; se esiste vengono aggiunti solo i default mancanti.
+  - Evitati duplicati confrontando i `terminalCommand` già presenti nella categoria GitHub.
+  - Aggiornati test su normalizzazione/seed per verificare presenza default e assenza duplicazioni.
+- Files touched:
+  - `src/extension.ts`
+  - `src/test/extension.test.ts`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - `npm test` (PASS)
+  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
 
 ---
 

@@ -25,7 +25,7 @@ suite('Extension Test Suite', () => {
 			undefined,
 		);
 
-		assert.strictEqual(categories.length, 1);
+		assert.strictEqual(categories.length, 2);
 		assert.strictEqual(categories[0].id, 'cat-0');
 		assert.strictEqual(categories[0].label, 'Categoria 1');
 		assert.strictEqual(categories[0].buttons.length, 1);
@@ -33,6 +33,8 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(categories[0].buttons[0].title, 'Apri terminale');
 		assert.strictEqual(categories[0].buttons[0].description, '');
 		assert.strictEqual(categories[0].buttons[0].icon, '');
+		assert.strictEqual(categories[1].id, 'github');
+		assert.strictEqual(categories[1].buttons.length, 3);
 	});
 
 	test('resolveCategoriesFromConfig migra la chiave legacy buttons', () => {
@@ -46,6 +48,11 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(categories[0].buttons[0].title, 'Nuovo file');
 		assert.strictEqual(categories[1].id, 'workspace');
 		assert.strictEqual(categories[2].id, 'github');
+		assert.strictEqual(categories[2].buttons.length, 3);
+		assert.deepStrictEqual(
+			categories[2].buttons.map((button) => button.terminalCommand),
+			['git fetch', 'git pull', 'git push'],
+		);
 	});
 
 	test('resolveCategoriesFromConfig usa fallback title/description/icon retrocompatibili', () => {
@@ -72,6 +79,37 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(categories[0].buttons[0].label, 'Untitled');
 		assert.strictEqual(categories[0].buttons[0].description, '');
 		assert.strictEqual(categories[0].buttons[0].icon, '');
+	});
+
+	test('resolveCategoriesFromConfig aggiunge i default GitHub mancanti senza duplicati', () => {
+		const categories = resolveCategoriesFromConfig(
+			[
+				{
+					id: 'github',
+					label: 'GitHub',
+					buttons: [
+						{
+							label: 'Git Fetch',
+							title: 'Fetch',
+							description: 'Custom',
+							icon: 'arrow-down',
+							command: 'workbench.action.terminal.new',
+							terminalCommand: 'git fetch',
+						},
+					],
+				},
+			],
+			undefined,
+		);
+
+		assert.strictEqual(categories.length, 1);
+		assert.strictEqual(categories[0].buttons.length, 3);
+		assert.strictEqual(
+			categories[0].buttons.filter((button) => button.terminalCommand === 'git fetch').length,
+			1,
+		);
+		assert.ok(categories[0].buttons.some((button) => button.terminalCommand === 'git pull'));
+		assert.ok(categories[0].buttons.some((button) => button.terminalCommand === 'git push'));
 	});
 
 	test('executeButtonCommand gestisce args array/object/assenti', async () => {
