@@ -1,9 +1,20 @@
-<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <rect x="10" y="10" width="108" height="108" rx="18" fill="#101418"/>
-  <rect x="22" y="22" width="84" height="84" rx="12" fill="none" stroke="#f2f5f8" stroke-width="8"/>
-  <rect x="32" y="32" width="26" height="20" rx="4" fill="#f2f5f8"/>
-  <rect x="70" y="32" width="26" height="20" rx="4" fill="#f2f5f8"/>
-  <path d="M42 80h44" stroke="#f2f5f8" stroke-width="8" stroke-linecap="round"/>
-  <path d="M52 70l-10 10 10 10" fill="none" stroke="#f2f5f8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M76 70l10 10-10 10" fill="none" stroke="#f2f5f8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <style>
+      .stroke { stroke:#4b4b4b; stroke-width:6; stroke-linecap:round; stroke-linejoin:round; fill:none; }
+      .tile { stroke:#4b4b4b; stroke-width:4; stroke-linecap:round; stroke-linejoin:round; fill:none; }
+      .accent { fill:#00B3FF; }
+    </style>
+  </defs>
+
+  <!-- Outer container (sidebar panel) -->
+  <rect x="10" y="10" width="108" height="108" rx="18" class="stroke"/>
+
+  <!-- Tiles (vertical list) -->
+  <rect x="26" y="32" width="76" height="16" rx="6" class="tile"/>
+  <rect x="26" y="56" width="76" height="16" rx="6" class="tile"/>
+  <rect x="26" y="80" width="76" height="16" rx="6" class="tile"/>
+
+  <!-- Play / execute marker on middle tile -->
+  <path d="M58 60 L58 68 L69 64 Z" class="accent"/>
 </svg>

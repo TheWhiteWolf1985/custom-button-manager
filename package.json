@@ -1,5 +1,6 @@
 {
   "name": "custom-command-sidebar",
+  "publisher": "JZanella",
   "displayName": "Custom Command Sidebar",
   "description": "Add buttons to run different custom commands or routines",
   "version": "1.0.0",

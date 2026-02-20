@@ -1,4 +1,13 @@
-<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <path d="M5 6h6M5 12h14M5 18h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <path d="M15 5l3 3-3 3M19 13l-3 3 3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer container -->
+    <rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/>
+    <!-- Tiles -->
+    <rect x="6.5" y="7" width="11" height="2.8" rx="1.2"/>
+    <rect x="6.5" y="11" width="11" height="2.8" rx="1.2"/>
+    <rect x="6.5" y="15" width="11" height="2.8" rx="1.2"/>
+  </g>
+
+  <!-- Play / execute marker -->
+  <path d="M12 11.2 L12 12.8 L13.3 12 Z" fill="currentColor"/>
 </svg>
