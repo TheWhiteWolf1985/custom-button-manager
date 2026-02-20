@@ -55,3 +55,19 @@ Checklist smoke post-change:
 - [ ] F5 / EDH + verifica visiva tiles GitHub
 - [ ] Click Fetch/Pull/Push in EDH con verifica terminale/cwd
 - [ ] CRUD GitHub senza flicker in EDH
+
+## Smoke rapido (3-5 minuti) - tiles globali + menu categoria + AI bootstrap
+
+### Sequenza ripetibile
+- [ ] 1) Avvia `F5` in Extension Development Host e apri una workspace folder.
+- [ ] 2) Verifica che tutte le categorie usino tiles verticali 1-per-riga.
+- [ ] 3) Usa `Aggiungi categoria` e verifica blocco duplicati case-insensitive.
+- [ ] 4) Apri `⋮` categoria e prova: aggiungi pulsante, rinomina, elimina (con conferma su categoria non vuota).
+- [ ] 5) In categoria `AI`, click `Crea struttura AI`: crea `AI/`; se già presente rinomina in `AI_new` / `AI_new_N`.
+- [ ] 6) Verifica presenza starter pack senza duplicati (`AI`, `Workspace`, `GitHub`, `Build/Test`, `Utils` + azioni minime).
+
+### Esecuzione registrata
+- Data: 2026-02-20
+- Scope: post STEP 001-008 (tiles globali + categoria/menu + AI bootstrap)
+- [x] `npm run compile` (CLI)
+- [ ] F5 / EDH con verifica manuale completa dei punti 1-6

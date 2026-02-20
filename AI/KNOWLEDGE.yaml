@@ -806,3 +806,17 @@ changes_log:
     risks:
       - "La resa a 16-32px resta da confermare manualmente nella Extensions view."
 
+  - step_id: "STEP 009 (TASKS UI tiles globali - 2026-02-20)"
+    summary: "Aggiornata smoke checklist per coprire tiles globali, menu categoria e bootstrap AI."
+    commit: ""
+    files:
+      - "AI/CHECKLISTS/SMOKE.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "Checklist resa ripetibile con focus su regressioni UI globali, unicita' nomi, quick actions categoria e comportamento `Crea struttura AI`."
+    risks:
+      - "Le verifiche EDH/file-system restano manuali e devono essere completate in ambiente Windows con workspace reale."
+

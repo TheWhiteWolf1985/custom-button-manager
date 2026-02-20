@@ -317,7 +317,7 @@ Vincoli/Decisioni (da utente):
 ---
 
 ## STEP 009 — Smoke checklist aggiornata (UI tiles globali + menu ⋮ + AI create structure)
-- Status: TODO
+- Status: DONE
 - Goal: rendere verificabile in 3–5 minuti la qualità post-cambiamenti.
 - Scope:
   - `AI/CHECKLISTS/SMOKE.md`
@@ -337,5 +337,16 @@ Vincoli/Decisioni (da utente):
   - Eseguita almeno una volta post STEP 001–008
 - Commit message:
   - `docs(smoke): update checklist for global tiles, category menu, and AI bootstrap`
+- What changed:
+  - Aggiornata `AI/CHECKLISTS/SMOKE.md` con nuova checklist 3-5 minuti dedicata a tiles globali, add category, menu `⋮`, AI bootstrap e starter pack.
+  - Inserita sezione di esecuzione registrata post STEP 001-008 con evidenza CLI (`npm run compile`) e punti manuali EDH.
+  - La checklist esplicita la verifica rename `AI` → `AI_new(_N)` quando la cartella AI esiste già.
+  - Completata tracciabilità knowledge dello step.
+- Files touched:
+  - `AI/CHECKLISTS/SMOKE.md`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
 
 ---
