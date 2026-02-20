@@ -53,7 +53,7 @@ Assunzioni operative:
 ---
 
 ## STEP 002 — Modello dati: aggiungere supporto a `icon` e `description` (retrocompatibile)
-- Status: TODO
+- Status: DONE
 - Goal: Abilitare title/description/icon per le tiles GitHub senza rompere config esistenti.
 - Scope:
   - Modello dati dei button (type/interface)
@@ -77,6 +77,18 @@ Assunzioni operative:
   - GitHub tiles mostrano title/description/icon quando presenti; quando assenti non rompono UI
 - Commit message:
   - `refactor(core): extend button schema with optional icon and description`
+- What changed:
+  - Esteso il modello `CommandButton` con campi opzionali `title` e `description`, mantenendo compatibilità con `label`.
+  - In `resolveCategoriesFromConfig` aggiunta normalizzazione retrocompatibile: fallback su `title/label`, `description` e `icon` sempre sicuri.
+  - Aggiornato il render webview per leggere `title/description` sulle tiles GitHub senza crash quando i campi non sono presenti.
+  - Aggiunti test unitari sui fallback (`title ?? label ?? "Untitled"`, `description ?? ""`, `icon ?? ""`).
+- Files touched:
+  - `src/extension.ts`
+  - `src/test/extension.test.ts`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - `npm test` (PASS)
 
 ---
 

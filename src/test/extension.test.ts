@@ -30,6 +30,9 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(categories[0].label, 'Categoria 1');
 		assert.strictEqual(categories[0].buttons.length, 1);
 		assert.strictEqual(categories[0].buttons[0].command, 'workbench.action.terminal.new');
+		assert.strictEqual(categories[0].buttons[0].title, 'Apri terminale');
+		assert.strictEqual(categories[0].buttons[0].description, '');
+		assert.strictEqual(categories[0].buttons[0].icon, '');
 	});
 
 	test('resolveCategoriesFromConfig migra la chiave legacy buttons', () => {
@@ -40,8 +43,35 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(categories.length, 3);
 		assert.strictEqual(categories[0].id, 'favorites');
 		assert.strictEqual(categories[0].buttons.length, 1);
+		assert.strictEqual(categories[0].buttons[0].title, 'Nuovo file');
 		assert.strictEqual(categories[1].id, 'workspace');
 		assert.strictEqual(categories[2].id, 'github');
+	});
+
+	test('resolveCategoriesFromConfig usa fallback title/description/icon retrocompatibili', () => {
+		const categories = resolveCategoriesFromConfig(
+			[
+				{
+					id: 'github',
+					label: 'GitHub',
+					buttons: [
+						{
+							label: '',
+							title: '',
+							description: undefined,
+							icon: undefined,
+							command: 'git.fetch',
+						},
+					],
+				},
+			],
+			undefined,
+		);
+
+		assert.strictEqual(categories[0].buttons[0].title, 'Untitled');
+		assert.strictEqual(categories[0].buttons[0].label, 'Untitled');
+		assert.strictEqual(categories[0].buttons[0].description, '');
+		assert.strictEqual(categories[0].buttons[0].icon, '');
 	});
 
 	test('executeButtonCommand gestisce args array/object/assenti', async () => {

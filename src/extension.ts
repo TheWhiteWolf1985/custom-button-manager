@@ -2,6 +2,8 @@
 
 type CommandButton = {
 	label: string;
+	title?: string;
+	description?: string;
 	command: string;
 	icon?: string;
 	args?: unknown;
@@ -28,18 +30,29 @@ export function resolveCategoriesFromConfig(
 	categories: CommandCategory[] | undefined,
 	legacyButtons: CommandButton[] | undefined,
 ): CommandCategory[] {
+	const normalizeButton = (button: CommandButton): CommandButton => {
+		const title = button.title?.trim() || button.label?.trim() || 'Untitled';
+		return {
+			...button,
+			title,
+			label: button.label?.trim() || title,
+			description: button.description ?? '',
+			icon: button.icon ?? '',
+		};
+	};
+
 	if (Array.isArray(categories) && categories.length) {
 		return categories.map((c, idx) => ({
 			id: c.id || `cat-${idx}`,
 			label: c.label || `Categoria ${idx + 1}`,
-			buttons: Array.isArray(c.buttons) ? c.buttons : [],
+			buttons: Array.isArray(c.buttons) ? c.buttons.map(normalizeButton) : [],
 		}));
 	}
 
 	// Migration: legacy flat buttons array goes into "Preferiti"
 	if (Array.isArray(legacyButtons) && legacyButtons.length) {
 		return [
-			{ id: 'favorites', label: 'Preferiti', buttons: legacyButtons },
+			{ id: 'favorites', label: 'Preferiti', buttons: legacyButtons.map(normalizeButton) },
 			{ id: 'workspace', label: 'Workspace', buttons: [] },
 			{ id: 'github', label: 'Github', buttons: [] },
 		];
@@ -154,7 +167,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 		const label = await vscode.window.showInputBox({
 			prompt: 'Etichetta pulsante',
-			value: existing?.label ?? '',
+			value: existing?.label ?? existing?.title ?? '',
 			ignoreFocusOut: true,
 			validateInput: (value) => (!value.trim() ? 'L\'etichetta è obbligatoria' : undefined),
 		});
@@ -200,8 +213,10 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 		const nextButton: CommandButton = {
 			label: label.trim(),
+			title: label.trim(),
+			description: existing?.description ?? '',
 			command: command.trim(),
-			icon: icon?.trim() || undefined,
+			icon: icon?.trim() || '',
 			args: parsedArgs,
 		};
 
@@ -617,7 +632,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 						const label = document.createElement('span');
 						label.className = 'label';
-						label.textContent = btn.label || btn.command;
+						label.textContent = btn.title || btn.label || btn.command || 'Untitled';
 
 						if (isGitHubCategory) {
 							const content = document.createElement('span');
@@ -625,11 +640,11 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 							const title = document.createElement('span');
 							title.className = 'github-tile__title';
-							title.textContent = btn.label || btn.command || 'Untitled';
+							title.textContent = btn.title || btn.label || 'Untitled';
 
 							const desc = document.createElement('span');
 							desc.className = 'github-tile__desc';
-							desc.textContent = btn.command || '';
+							desc.textContent = btn.description || '';
 
 							content.append(title, desc);
 							button.append(icon, content);

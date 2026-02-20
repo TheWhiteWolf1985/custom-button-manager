@@ -624,3 +624,18 @@ changes_log:
     risks:
       - "La validazione visuale no-flicker resta manuale in EDH."
 
+  - step_id: "STEP 002 (TASKS GitHub tiles - 2026-02-20)"
+    summary: "Esteso schema button con title/description/icon retrocompatibili e fallback sicuri."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "src/test/extension.test.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+    notes: "Il render GitHub usa `title` e `description` quando presenti; fallback su `label/Untitled` e stringhe vuote evita regressioni su config esistenti."
+    risks:
+      - "Lo schema resta permissivo: eventuali valori non stringa in settings continuano a richiedere validazione difensiva lato UI."
+
