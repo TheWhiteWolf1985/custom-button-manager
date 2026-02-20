@@ -35,3 +35,23 @@ Checklist smoke post-change:
 - [ ] Step 6 completato (add senza flicker)
 - [ ] Step 7 completato (edit senza flicker/handler persi)
 - [ ] Step 8 completato (delete senza flash)
+
+## Smoke rapido (3 minuti) - GitHub tiles + git actions
+
+### Sequenza ripetibile
+- [ ] 1) Esegui `npm run compile`.
+- [ ] 2) Avvia `F5` (Extension Development Host).
+- [ ] 3) Apri una workspace folder con repository Git.
+- [ ] 4) Apri sidebar `Commands` e sezione GitHub.
+- [ ] 5) Verifica tiles 1-per-riga con `border-radius: 5px`, icon/title/description.
+- [ ] 6) Click su Fetch/Pull/Push: terminale si apre e lancia comando con cwd workspace.
+- [ ] 7) CRUD button in GitHub (add/edit/delete) senza flicker evidente e senza perdita handler click.
+
+### Esecuzione registrata
+- Data: 2026-02-20
+- Scope: post STEP 001-004 (GitHub tiles + terminal actions)
+- [x] `npm run compile` (CLI)
+- [x] `npm test` (CLI)
+- [ ] F5 / EDH + verifica visiva tiles GitHub
+- [ ] Click Fetch/Pull/Push in EDH con verifica terminale/cwd
+- [ ] CRUD GitHub senza flicker in EDH

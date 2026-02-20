@@ -177,7 +177,7 @@ Assunzioni operative:
 ---
 
 ## STEP 005 — QA: smoke checklist per tiles GitHub + git actions
-- Status: TODO
+- Status: DONE
 - Goal: Rendere ripetibile la validazione manuale (UI) e ridurre rischio regressioni.
 - Scope:
   - `AI/CHECKLISTS/SMOKE.md`
@@ -200,5 +200,16 @@ Assunzioni operative:
   - Eseguita almeno una volta dopo STEP 001–004
 - Commit message:
   - `docs(smoke): add manual checks for GitHub tiles and git terminal actions`
+- What changed:
+  - Aggiornata `AI/CHECKLISTS/SMOKE.md` con checklist dedicata “GitHub tiles + git actions” (sequenza in 7 step ripetibile).
+  - Registrata una prima esecuzione post STEP 001-004 con evidenze CLI (`npm run compile`, `npm test`) e punti EDH esplicitati.
+  - La checklist include verifica layout 1-per-riga, border-radius 5px, icon/title/description, esecuzione terminale Fetch/Pull/Push e CRUD senza flicker.
+- Files touched:
+  - `AI/CHECKLISTS/SMOKE.md`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - `npm test` (PASS)
+  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
 
 ---

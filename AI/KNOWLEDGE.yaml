@@ -671,3 +671,18 @@ changes_log:
     risks:
       - "I test automatici coprono il seed dati ma non verificano visualmente le icone/click terminale in EDH."
 
+  - step_id: "STEP 005 (TASKS GitHub tiles - 2026-02-20)"
+    summary: "Aggiornata smoke checklist per validazione manuale GitHub tiles e azioni Git da terminale."
+    commit: ""
+    files:
+      - "AI/CHECKLISTS/SMOKE.md"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "Checklist resa ripetibile con passi osservabili per layout GitHub, esecuzione Fetch/Pull/Push e regressioni CRUD."
+    risks:
+      - "Le verifiche EDH restano manuali e dipendono dalla disponibilita' ambiente locale."
+
