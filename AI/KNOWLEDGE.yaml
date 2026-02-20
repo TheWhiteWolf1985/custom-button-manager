@@ -716,3 +716,19 @@ changes_log:
     risks:
       - "Nessuna migrazione avanzata dei workspace preesistenti: categorie gia' salvate con label storica restano invariate finche' non modificate."
 
+  - step_id: "STEP 003 (TASKS UI tiles globali - 2026-02-20)"
+    summary: "Aggiunti controlli di unicita' case-insensitive su categorie/pulsanti."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "src/test/extension.test.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "npm test"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "Il flusso add/edit pulsante blocca duplicati case-insensitive nella categoria; helper riusabili pronti anche per add/rename categoria."
+    risks:
+      - "La validazione end-to-end su add/rename categoria verra' completata quando i flussi UI saranno esposti (STEP 004/005)."
+

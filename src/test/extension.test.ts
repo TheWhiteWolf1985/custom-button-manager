@@ -3,7 +3,13 @@ import * as assert from 'assert';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
-import { executeButtonAction, executeButtonCommand, resolveCategoriesFromConfig } from '../extension';
+import {
+	executeButtonAction,
+	executeButtonCommand,
+	hasButtonNameCollision,
+	hasCategoryNameCollision,
+	resolveCategoriesFromConfig,
+} from '../extension';
 
 suite('Extension Test Suite', () => {
 	vscode.window.showInformationMessage('Start all tests.');
@@ -163,5 +169,31 @@ suite('Extension Test Suite', () => {
 		assert.deepStrictEqual(terminalCalls, ['git fetch']);
 		assert.strictEqual(commandCalls.length, 1);
 		assert.strictEqual(commandCalls[0].command, 'workbench.action.files.newUntitledFile');
+	});
+
+	test('hasCategoryNameCollision rileva duplicati case-insensitive', () => {
+		const categories = [
+			{ id: 'ai', label: 'AI', buttons: [] },
+			{ id: 'workspace', label: 'Workspace', buttons: [] },
+		];
+
+		assert.strictEqual(hasCategoryNameCollision(categories, 'ai'), true);
+		assert.strictEqual(hasCategoryNameCollision(categories, 'AI', 0), false);
+		assert.strictEqual(hasCategoryNameCollision(categories, 'utils'), false);
+	});
+
+	test('hasButtonNameCollision rileva duplicati case-insensitive nella categoria', () => {
+		const category = {
+			id: 'github',
+			label: 'Github',
+			buttons: [
+				{ label: 'Fetch', title: 'Fetch', command: 'x', terminalCommand: 'git fetch' },
+				{ label: 'Pull', title: 'Pull', command: 'y', terminalCommand: 'git pull' },
+			],
+		};
+
+		assert.strictEqual(hasButtonNameCollision(category, 'fetch'), true);
+		assert.strictEqual(hasButtonNameCollision(category, 'FETCH', 0), false);
+		assert.strictEqual(hasButtonNameCollision(category, 'push'), false);
 	});
 });

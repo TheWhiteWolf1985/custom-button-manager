@@ -81,7 +81,7 @@ Vincoli/Decisioni (da utente):
 ---
 
 ## STEP 003 — Validazione unicità (case-insensitive) per categorie e pulsanti
-- Status: TODO
+- Status: DONE
 - Goal: bloccare creazione/rename se il nome è già presente (categorie globali; pulsanti dentro categoria).
 - Scope:
   - Flussi: add category, rename category, add button, edit/rename button (se esiste)
@@ -99,6 +99,19 @@ Vincoli/Decisioni (da utente):
   - Non è possibile creare/renominare pulsanti duplicati dentro la stessa categoria (case-insensitive)
 - Commit message:
   - `fix(core): enforce case-insensitive uniqueness for categories and buttons`
+- What changed:
+  - Introdotti helper case-insensitive per rilevare collisioni su nome categoria e nome pulsante (`trim().toLowerCase()`).
+  - Nel flusso add/edit pulsante è ora bloccato il salvataggio se esiste già un pulsante omonimo nella stessa categoria.
+  - In caso di collisione viene mostrato errore esplicito e non viene eseguito alcun update configurazione.
+  - Aggiunti test dedicati sui controlli di unicità per categorie e pulsanti.
+- Files touched:
+  - `src/extension.ts`
+  - `src/test/extension.test.ts`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - `npm test` (PASS)
+  - `F5 / Run Extension` (manuale richiesto, non eseguito via CLI)
 
 ---
 

@@ -68,6 +68,48 @@ function normalizeButton(button: CommandButton): CommandButton {
 	};
 }
 
+function toNameKey(value: string | undefined): string {
+	return (value || '').trim().toLowerCase();
+}
+
+function getButtonName(button: CommandButton): string {
+	return button.title?.trim() || button.label?.trim() || 'Untitled';
+}
+
+export function hasCategoryNameCollision(
+	categories: CommandCategory[],
+	candidateName: string,
+	excludeCategoryIndex?: number,
+): boolean {
+	const candidate = toNameKey(candidateName);
+	if (!candidate) {
+		return false;
+	}
+	return categories.some((category, index) => {
+		if (index === excludeCategoryIndex) {
+			return false;
+		}
+		return toNameKey(category.label) === candidate;
+	});
+}
+
+export function hasButtonNameCollision(
+	category: CommandCategory,
+	candidateName: string,
+	excludeButtonIndex?: number,
+): boolean {
+	const candidate = toNameKey(candidateName);
+	if (!candidate) {
+		return false;
+	}
+	return category.buttons.some((button, index) => {
+		if (index === excludeButtonIndex) {
+			return false;
+		}
+		return toNameKey(getButtonName(button)) === candidate;
+	});
+}
+
 function isGitHubCategory(category: CommandCategory): boolean {
 	return category.id?.toLowerCase() === 'github' || category.label?.toLowerCase() === 'github';
 }
@@ -261,6 +303,11 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 		if (!label) {
 			return;
 		}
+		const normalizedLabel = label.trim();
+		if (hasButtonNameCollision(targetCategory, normalizedLabel, buttonIndex)) {
+			void vscode.window.showErrorMessage(`Esiste già un pulsante "${normalizedLabel}" nella categoria "${targetCategory.label}" (case-insensitive).`);
+			return;
+		}
 
 		const command = await vscode.window.showInputBox({
 			prompt: 'Command id (esempio: workbench.action.files.newUntitledFile)',
@@ -299,8 +346,8 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 		}
 
 		const nextButton: CommandButton = {
-			label: label.trim(),
-			title: label.trim(),
+			label: normalizedLabel,
+			title: normalizedLabel,
 			description: existing?.description ?? '',
 			command: command.trim(),
 			icon: icon?.trim() || '',
