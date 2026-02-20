@@ -400,6 +400,9 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
 			gap: 8px;
 		}
+		.github-grid {
+			grid-template-columns: 1fr;
+		}
 		.tile {
 			position: relative;
 			border-radius: 10px;
@@ -441,6 +444,48 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			white-space: nowrap;
 			font-weight: 600;
 		}
+		.github-tile {
+			border-radius: 5px;
+			min-height: auto;
+			aspect-ratio: auto;
+		}
+		.github-tile__button {
+			height: auto;
+			min-height: 62px;
+			padding: 12px 16px;
+			display: grid;
+			grid-template-columns: 28px minmax(0, 1fr);
+			align-items: center;
+			gap: 10px;
+			text-align: left;
+			justify-items: start;
+		}
+		.github-tile__icon {
+			font-size: 20px;
+			width: 24px;
+			text-align: center;
+			color: var(--vscode-icon-foreground, currentColor);
+		}
+		.github-tile__content {
+			min-width: 0;
+			display: flex;
+			flex-direction: column;
+			gap: 3px;
+		}
+		.github-tile__title {
+			font-size: 14px;
+			font-weight: 600;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		.github-tile__desc {
+			font-size: 12px;
+			color: var(--vscode-descriptionForeground);
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
 		.menu-btn {
 			position: absolute;
 			top: 6px;
@@ -480,6 +525,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			function buildCategorySection(cat, catIndex) {
 				const section = document.createElement('div');
 				section.className = 'category';
+				const isGitHubCategory = (cat.id || '').toLowerCase() === 'github' || (cat.label || '').toLowerCase() === 'github';
 
 				const header = document.createElement('div');
 				header.className = 'category-header';
@@ -533,10 +579,16 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 				} else {
 					const grid = document.createElement('div');
 					grid.className = 'grid';
+					if (isGitHubCategory) {
+						grid.classList.add('github-grid');
+					}
 
 					cat.buttons.forEach((btn, buttonIndex) => {
 						const tile = document.createElement('div');
 						tile.className = 'tile';
+						if (isGitHubCategory) {
+							tile.classList.add('github-tile');
+						}
 
 						const menu = document.createElement('button');
 						menu.className = 'menu-btn';
@@ -550,18 +602,40 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 						const button = document.createElement('button');
 						button.className = 'command-btn';
 						button.type = 'button';
+						if (isGitHubCategory) {
+							button.classList.add('github-tile__button');
+						}
 						button.addEventListener('click', () => {
 							vscode.postMessage({ type: 'execute', categoryIndex: catIndex, buttonIndex });
 						});
 
 						const icon = document.createElement('span');
 						icon.className = 'codicon codicon-' + (btn.icon || 'terminal');
+						if (isGitHubCategory) {
+							icon.classList.add('github-tile__icon');
+						}
 
 						const label = document.createElement('span');
 						label.className = 'label';
 						label.textContent = btn.label || btn.command;
 
-						button.append(icon, label);
+						if (isGitHubCategory) {
+							const content = document.createElement('span');
+							content.className = 'github-tile__content';
+
+							const title = document.createElement('span');
+							title.className = 'github-tile__title';
+							title.textContent = btn.label || btn.command || 'Untitled';
+
+							const desc = document.createElement('span');
+							desc.className = 'github-tile__desc';
+							desc.textContent = btn.command || '';
+
+							content.append(title, desc);
+							button.append(icon, content);
+						} else {
+							button.append(icon, label);
+						}
 						tile.append(button, menu);
 						grid.append(tile);
 					});

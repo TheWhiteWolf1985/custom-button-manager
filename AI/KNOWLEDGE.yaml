@@ -610,3 +610,17 @@ changes_log:
     risks:
       - "La validazione EDH resta manuale e dipende dall'ambiente locale; non e' coperta da automazione CI."
 
+  - step_id: "STEP 001 (TASKS GitHub tiles - 2026-02-17)"
+    summary: "Aggiunto layout verticale dedicato per pulsanti categoria GitHub in webview."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "F5 / Run Extension (manuale, non eseguito via CLI)"
+    notes: "In GitHub i pulsanti ora renderizzano come tile 1-per-riga con icona a sinistra e title/description a destra; altre categorie invariate."
+    risks:
+      - "La validazione visuale no-flicker resta manuale in EDH."
+
