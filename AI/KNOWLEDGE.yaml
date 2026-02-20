@@ -820,3 +820,41 @@ changes_log:
     risks:
       - "Le verifiche EDH/file-system restano manuali e devono essere completate in ambiente Windows con workspace reale."
 
+  - step_id: "HOTFIX UI (2026-02-20)"
+    summary: "Corretto default accordion chiusi e resa icona menu categoria con Codicon."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+    notes: "Gli accordion ora partono chiusi di default; il menu categoria usa `codicon-more-vertical` evitando il carattere `?`."
+    risks:
+      - "Verifica visiva finale in EDH consigliata per confermare resa font/icona in tutti i temi."
+
+  - step_id: "HOTFIX UI 2 (2026-02-20)"
+    summary: "Ripristinati comandi GitHub default, menu a tre puntini testuale e icona activitybar dedicata."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "package.json"
+      - "media/activitybar-icon.svg"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+    notes: "Seed GitHub esteso (remote/branches/status) con dedupe su `terminalCommand`; menu usa `...` per evitare fallback `?`; activitybar ora usa icona monochrome trasparente dedicata."
+    risks:
+      - "Necessario reload della finestra VS Code per vedere subito la nuova icona in activitybar."
+
+  - step_id: "HOTFIX UI 3 (2026-02-20)"
+    summary: "Allineato il menu webview al simbolo richiesto `⋮` in header categoria e tile comando."
+    commit: ""
+    files:
+      - "src/extension.ts"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+    notes: "Sostituito il fallback testuale `...` con il carattere Unicode `⋮` nei due pulsanti menu."
+    risks:
+      - "La resa finale dipende dal font del webview; verificare visualmente in EDH su tema in uso."
+

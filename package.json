@@ -31,7 +31,7 @@
         {
           "id": "myCommandSidebar",
           "title": "Commands",
-          "icon": "media/icon.svg"
+          "icon": "media/activitybar-icon.svg"
         }
       ]
     },

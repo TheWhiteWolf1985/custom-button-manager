@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+ï»¿import * as vscode from 'vscode';
 import * as path from 'node:path';
 
 type CommandButton = {
@@ -57,6 +57,30 @@ const GITHUB_DEFAULT_BUTTONS: CommandButton[] = [
 		icon: 'arrow-up',
 		command: 'workbench.action.terminal.new',
 		terminalCommand: 'git push',
+	},
+	{
+		label: 'Git Remote',
+		title: 'Remote',
+		description: 'Mostra i remote configurati',
+		icon: 'cloud',
+		command: 'workbench.action.terminal.new',
+		terminalCommand: 'git remote -v',
+	},
+	{
+		label: 'Git Branches Remote',
+		title: 'Branches Remote',
+		description: 'Elenca branch remoti',
+		icon: 'source-control',
+		command: 'workbench.action.terminal.new',
+		terminalCommand: 'git branch -r',
+	},
+	{
+		label: 'Git Status',
+		title: 'Status',
+		description: 'Mostra stato repository',
+		icon: 'checklist',
+		command: 'workbench.action.terminal.new',
+		terminalCommand: 'git status -sb',
 	},
 ];
 
@@ -157,9 +181,19 @@ function ensureSeedButtons(
 		buttons: category.buttons.map((button) => ({ ...button })),
 	};
 	for (const seedButton of seedButtons) {
-		const seedName = getButtonName(seedButton);
-		if (hasButtonNameCollision(nextCategory, seedName)) {
-			continue;
+		const seedTerminalCommand = seedButton.terminalCommand?.trim().toLowerCase();
+		if (seedTerminalCommand) {
+			const hasTerminalCommand = nextCategory.buttons.some(
+				(button) => button.terminalCommand?.trim().toLowerCase() === seedTerminalCommand,
+			);
+			if (hasTerminalCommand) {
+				continue;
+			}
+		} else {
+			const seedName = getButtonName(seedButton);
+			if (hasButtonNameCollision(nextCategory, seedName)) {
+				continue;
+			}
 		}
 		nextCategory.buttons.push(normalizeButton(seedButton));
 	}
@@ -341,14 +375,14 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			prompt: 'Nome categoria',
 			placeHolder: 'Nuova categoria',
 			ignoreFocusOut: true,
-			validateInput: (value) => (!value.trim() ? 'Il nome categoria è obbligatorio' : undefined),
+			validateInput: (value) => (!value.trim() ? 'Il nome categoria Ã¨ obbligatorio' : undefined),
 		});
 		if (!name) {
 			return;
 		}
 		const nextLabel = name.trim();
 		if (hasCategoryNameCollision(categories, nextLabel)) {
-			void vscode.window.showErrorMessage(`Esiste già una categoria "${nextLabel}" (case-insensitive).`);
+			void vscode.window.showErrorMessage(`Esiste giÃ  una categoria "${nextLabel}" (case-insensitive).`);
 			return;
 		}
 		const nextIdBase = nextLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'category';
@@ -391,14 +425,14 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			prompt: 'Etichetta pulsante',
 			value: existing?.label ?? existing?.title ?? '',
 			ignoreFocusOut: true,
-			validateInput: (value) => (!value.trim() ? 'L\'etichetta è obbligatoria' : undefined),
+			validateInput: (value) => (!value.trim() ? 'L\'etichetta Ã¨ obbligatoria' : undefined),
 		});
 		if (!label) {
 			return;
 		}
 		const normalizedLabel = label.trim();
 		if (hasButtonNameCollision(targetCategory, normalizedLabel, buttonIndex)) {
-			void vscode.window.showErrorMessage(`Esiste già un pulsante "${normalizedLabel}" nella categoria "${targetCategory.label}" (case-insensitive).`);
+			void vscode.window.showErrorMessage(`Esiste giÃ  un pulsante "${normalizedLabel}" nella categoria "${targetCategory.label}" (case-insensitive).`);
 			return;
 		}
 
@@ -406,7 +440,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 			prompt: 'Command id (esempio: workbench.action.files.newUntitledFile)',
 			value: existing?.command ?? '',
 			ignoreFocusOut: true,
-			validateInput: (value) => (!value.trim() ? 'Il command id è obbligatorio' : undefined),
+			validateInput: (value) => (!value.trim() ? 'Il command id Ã¨ obbligatorio' : undefined),
 		});
 		if (!command) {
 			return;
@@ -567,14 +601,14 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 				prompt: 'Nuovo nome categoria',
 				value: category.label,
 				ignoreFocusOut: true,
-				validateInput: (value) => (!value.trim() ? 'Il nome categoria è obbligatorio' : undefined),
+				validateInput: (value) => (!value.trim() ? 'Il nome categoria Ã¨ obbligatorio' : undefined),
 			});
 			if (!nextName) {
 				return;
 			}
 			const nextLabel = nextName.trim();
 			if (hasCategoryNameCollision(categories, nextLabel, categoryIndex)) {
-				void vscode.window.showErrorMessage(`Esiste già una categoria "${nextLabel}" (case-insensitive).`);
+				void vscode.window.showErrorMessage(`Esiste giÃ  una categoria "${nextLabel}" (case-insensitive).`);
 				return;
 			}
 			const nextCategories = categories.slice();
@@ -898,7 +932,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 				const caret = document.createElement('span');
 				caret.className = 'codicon codicon-chevron-down';
-				const isCollapsed = collapsed.get(cat.id) === true;
+				const isCollapsed = collapsed.get(cat.id) !== false;
 				if (isCollapsed) {
 					caret.style.transform = 'rotate(-90deg)';
 				}
@@ -916,7 +950,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 				headerMenu.type = 'button';
 				headerMenu.style.padding = '4px 8px';
 				headerMenu.style.fontSize = '12px';
-				headerMenu.textContent = '?';
+				headerMenu.textContent = 'â‹®';
 				headerMenu.title = 'Azioni categoria';
 				headerMenu.addEventListener('click', (event) => {
 					event.stopPropagation();
@@ -929,7 +963,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 				header.append(caret, title, count, actions);
 				header.addEventListener('click', () => {
-					const current = collapsed.get(cat.id) === true;
+					const current = collapsed.get(cat.id) !== false;
 					collapsed.set(cat.id, !current);
 					render();
 				});
@@ -955,7 +989,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 
 						const menu = document.createElement('button');
 						menu.className = 'menu-btn';
-						menu.textContent = '?';
+						menu.textContent = 'â‹®';
 						menu.title = 'Modifica o elimina';
 						menu.addEventListener('click', (event) => {
 							event.stopPropagation();
@@ -1011,7 +1045,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 					const signature = JSON.stringify({
 						label: cat.label || 'Categoria',
 						buttons: Array.isArray(cat.buttons) ? cat.buttons : [],
-						collapsed: collapsed.get(safeId) === true,
+						collapsed: collapsed.get(safeId) !== false,
 						index: catIndex,
 					});
 
@@ -1068,5 +1102,6 @@ function getNonce(): string {
 	}
 	return text;
 }
+
 
 

@@ -58,3 +58,4 @@ coverage/
 logs/
 *.log
 .temp/
+AI_structure/
