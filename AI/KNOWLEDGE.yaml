@@ -790,3 +790,19 @@ changes_log:
     risks:
       - "La validazione end-to-end su file system workspace resta manuale in EDH/Windows."
 
+  - step_id: "STEP 008 (TASKS UI tiles globali - 2026-02-20)"
+    summary: "Sostituita icona estensione con design techy monochrome (SVG+PNG)."
+    commit: ""
+    files:
+      - "media/icon.svg"
+      - "media/icon.png"
+      - "package.json"
+      - "AI/AI_TASKS.md"
+      - "AI/KNOWLEDGE.yaml"
+    commands:
+      - "npm run compile"
+      - "Verifica icona in VS Code (manuale, non eseguita via CLI)"
+    notes: "Il metadata extension usa ora `icon: media/icon.png`; la view activitybar continua a usare l'SVG aggiornato."
+    risks:
+      - "La resa a 16-32px resta da confermare manualmente nella Extensions view."
+

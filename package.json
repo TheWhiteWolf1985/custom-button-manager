@@ -3,6 +3,7 @@
   "displayName": "Custom command sidebar",
   "description": "Add buttons to run different custom commands or routines",
   "version": "0.0.1",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.107.0"
   },

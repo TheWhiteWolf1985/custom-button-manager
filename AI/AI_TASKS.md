@@ -283,7 +283,7 @@ Vincoli/Decisioni (da utente):
 ---
 
 ## STEP 008 — Icona estensione: nuova icona techy monochrome (sostituire “quadrato bianco”)
-- Status: TODO
+- Status: DONE
 - Goal: sostituire l’icona attuale con una più leggibile e coerente.
 - Scope:
   - Asset icona (es. `resources/icon.png` e sorgente `resources/icon.svg`)
@@ -300,6 +300,19 @@ Vincoli/Decisioni (da utente):
   - Risulta leggibile a 16–32 px
 - Commit message:
   - `chore(assets): replace extension icon with techy monochrome design`
+- What changed:
+  - Sostituita l’icona SVG con un design techy monochrome (griglia + chevron comando) più leggibile.
+  - Aggiunto export PNG (`media/icon.png`) per uso marketplace/extension metadata.
+  - Aggiornato `package.json` con campo top-level `icon` puntato al nuovo PNG.
+  - Mantenuta compatibilità con l’icona della view container già basata su `media/icon.svg`.
+- Files touched:
+  - `media/icon.svg`
+  - `media/icon.png`
+  - `package.json`
+  - `AI/AI_TASKS.md`
+- Commands run:
+  - `npm run compile` (PASS)
+  - Verifica icona in VS Code (manuale richiesta, non eseguita via CLI)
 
 ---
 
