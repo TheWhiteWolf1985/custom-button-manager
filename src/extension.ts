@@ -1,5 +1,7 @@
 ﻿import * as vscode from 'vscode';
 import * as path from 'node:path';
+import * as fs from 'node:fs';
+import { spawn } from 'node:child_process';
 
 type CommandButton = {
 	label: string;
@@ -23,7 +25,6 @@ const LEGACY_KEY = 'buttons';
 const VIEW_ID = 'myCommandSidebar.view';
 const TERMINAL_NAME = 'Custom Button Manager';
 const AI_SCRIPT_PLACEHOLDER = '__AI_CREATE_STRUCTURE_SCRIPT__';
-const AI_WORKSPACE_PLACEHOLDER = '__AI_WORKSPACE_PATH__';
 
 const DEFAULT_CATEGORY_DEFS: Array<{ id: string; label: string }> = [
 	{ id: 'ai', label: 'AI' },
@@ -91,7 +92,7 @@ const AI_DEFAULT_BUTTONS: CommandButton[] = [
 		description: 'Crea AI/ e i file base del kit',
 		icon: 'folder-library',
 		command: 'workbench.action.terminal.new',
-		terminalCommand: `powershell -ExecutionPolicy Bypass -File "${AI_SCRIPT_PLACEHOLDER}" -WorkspacePath "${AI_WORKSPACE_PLACEHOLDER}"`,
+		terminalCommand: `powershell -ExecutionPolicy Bypass -File "${AI_SCRIPT_PLACEHOLDER}"`,
 	},
 ];
 
@@ -548,24 +549,13 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 						void vscode.window.showErrorMessage('Apri una cartella workspace per eseguire comandi Git dal terminale.');
 						return;
 					}
-					if (
-						process.platform !== 'win32' &&
-						terminalCommand.includes(AI_SCRIPT_PLACEHOLDER)
-					) {
-						void vscode.window.showErrorMessage('Funzione disponibile solo su Windows/PowerShell.');
+					if (terminalCommand.includes(AI_SCRIPT_PLACEHOLDER)) {
+						await this.runAiBootstrapWorkflow(workspaceFolder.uri.fsPath);
 						return;
 					}
-					const scriptPath = path.join(
-						this.context.extensionPath,
-						'scripts',
-						'create-ai-structure.ps1',
-					);
-					const resolvedTerminalCommand = terminalCommand
-						.replaceAll(AI_SCRIPT_PLACEHOLDER, scriptPath)
-						.replaceAll(AI_WORKSPACE_PLACEHOLDER, workspaceFolder.uri.fsPath);
 					const terminal = this.getOrCreateCommandTerminal(workspaceFolder.uri);
 					terminal.show(true);
-					terminal.sendText(resolvedTerminalCommand, true);
+					terminal.sendText(terminalCommand, true);
 				},
 			);
 		} catch (error) {
@@ -573,6 +563,70 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 		}
 	}
 
+
+	private async runAiBootstrapWorkflow(workspacePath: string): Promise<void> {
+		if (process.platform !== 'win32') {
+			void vscode.window.showErrorMessage('Funzione disponibile solo su Windows/PowerShell.');
+			return;
+		}
+
+		const scriptPath = path.join(
+			this.context.extensionPath,
+			'scripts',
+			'create-ai-structure.ps1',
+		);
+		await this.runPowerShellScript(scriptPath, workspacePath);
+
+		const promptPath = path.join(workspacePath, 'AI', 'first_prompt.md');
+		if (!fs.existsSync(promptPath)) {
+			void vscode.window.showWarningMessage(
+				'Struttura AI creata, ma il file AI/first_prompt.md non è stato trovato.',
+			);
+			return;
+		}
+
+		const promptUri = vscode.Uri.file(promptPath);
+		const doc = await vscode.workspace.openTextDocument(promptUri);
+		await vscode.window.showTextDocument(doc, { preview: false });
+		void vscode.window.showInformationMessage(
+			'Struttura AI creata. Ho aperto AI/first_prompt.md: copia il prompt in chat per il first-run.',
+		);
+	}
+
+	private async runPowerShellScript(scriptPath: string, workspacePath: string): Promise<void> {
+		await new Promise<void>((resolve, reject) => {
+			const args = [
+				'-ExecutionPolicy',
+				'Bypass',
+				'-File',
+				scriptPath,
+				'-WorkspacePath',
+				workspacePath,
+			];
+			const ps = spawn('powershell', args, {
+				windowsHide: true,
+				shell: false,
+			});
+
+			let stdErr = '';
+			ps.stderr.on('data', (chunk: Buffer | string) => {
+				stdErr += chunk.toString();
+			});
+
+			ps.on('error', (error) => {
+				reject(new Error(`Impossibile avviare PowerShell: ${String(error)}`));
+			});
+
+			ps.on('close', (code) => {
+				if (code === 0) {
+					resolve();
+					return;
+				}
+					const details = stdErr.trim() ? ` Dettagli: ${stdErr.trim()}` : '';
+					reject(new Error(`Script AI terminato con codice ${code}.${details}`));
+				});
+			});
+		}
 	private async showCategoryMenu(categoryIndex: number): Promise<void> {
 		const categories = this.getCategories();
 		const category = categories[categoryIndex];
