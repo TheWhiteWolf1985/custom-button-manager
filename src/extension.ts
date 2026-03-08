@@ -250,7 +250,7 @@ export function resolveCategoriesFromConfig(
 		})));
 	}
 
-	// Migration: legacy flat buttons array goes into "Preferiti"
+	// Migration: legacy flat buttons array goes into "AI"
 	if (Array.isArray(legacyButtons) && legacyButtons.length) {
 		return ensureDefaultCategoriesAndButtons([
 			{ id: 'ai', label: 'AI', buttons: legacyButtons.map(normalizeButton) },
@@ -701,7 +701,6 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 	private getHtml(webview: vscode.Webview): string {
 		const codiconUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'codicon.css'));
 		const nonce = getNonce();
-		const categories = this.getCategories();
 
 		return `<!DOCTYPE html>
 <html lang="en">
@@ -910,7 +909,7 @@ class CommandViewProvider implements vscode.WebviewViewProvider {
 		<button id="add-category" class="button" type="button"><span class="codicon codicon-add"></span>Aggiungi categoria</button>
 	</div>
 	<div id="categories" class="categories"></div>
-	<div id="empty" class="empty" hidden>Nessun comando. Usa + sulla categoria per aggiungerne uno.</div>
+	<div id="empty" class="empty" hidden>Nessun comando. Usa Aggiungi categoria o il menu categoria per iniziare.</div>
 		<script nonce="${nonce}">
 			const vscode = acquireVsCodeApi();
 			let categories = [];

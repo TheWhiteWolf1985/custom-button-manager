@@ -52,6 +52,13 @@ if (Test-Path -LiteralPath $targetAiPath -PathType Container) {
 }
 
 New-Item -ItemType Directory -Path $targetAiPath -Force | Out-Null
-Copy-Item -Path (Join-Path $templateRoot "*") -Destination $targetAiPath -Recurse -Force
+$templateItems = Get-ChildItem -LiteralPath $templateRoot -Force
+if (-not $templateItems -or $templateItems.Count -eq 0) {
+	throw "Template vuoto: $templateRoot"
+}
+
+foreach ($item in $templateItems) {
+	Copy-Item -LiteralPath $item.FullName -Destination $targetAiPath -Recurse -Force
+}
 
 Write-Output "Struttura AI creata in: $targetAiPath"

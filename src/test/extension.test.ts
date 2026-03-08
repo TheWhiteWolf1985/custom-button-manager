@@ -14,12 +14,7 @@ import {
 suite('Extension Test Suite', () => {
 	vscode.window.showInformationMessage('Start all tests.');
 
-	test('Sample test', () => {
-		assert.strictEqual(-1, [1, 2, 3].indexOf(5));
-		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
-	});
-
-	test('resolveCategoriesFromConfig restituisce la struttura settings', () => {
+	test('resolveCategoriesFromConfig normalizza input e garantisce categorie di default', () => {
 		const categories = resolveCategoriesFromConfig(
 			[
 				{
@@ -31,7 +26,7 @@ suite('Extension Test Suite', () => {
 			undefined,
 		);
 
-		assert.strictEqual(categories.length, 5);
+		assert.strictEqual(categories.length, 6);
 		assert.strictEqual(categories[0].id, 'cat-0');
 		assert.strictEqual(categories[0].label, 'Categoria 1');
 		assert.strictEqual(categories[0].buttons.length, 1);
@@ -39,30 +34,40 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(categories[0].buttons[0].title, 'Apri terminale');
 		assert.strictEqual(categories[0].buttons[0].description, '');
 		assert.strictEqual(categories[0].buttons[0].icon, '');
+		assert.ok(categories.some((category) => category.id === 'ai'));
+		assert.ok(categories.some((category) => category.id === 'workspace'));
 		assert.ok(categories.some((category) => category.id === 'github'));
 		assert.ok(categories.some((category) => category.id === 'build-test'));
 		assert.ok(categories.some((category) => category.id === 'utils'));
 	});
 
 	test('resolveCategoriesFromConfig migra la chiave legacy buttons', () => {
+		const expectedGitCommands = [
+			'git fetch',
+			'git pull',
+			'git push',
+			'git remote -v',
+			'git branch -r',
+			'git status -sb',
+		];
 		const categories = resolveCategoriesFromConfig(undefined, [
 			{ label: 'Nuovo file', command: 'workbench.action.files.newUntitledFile' },
 		]);
 
 		assert.strictEqual(categories.length, 5);
 		assert.strictEqual(categories[0].id, 'ai');
-		assert.strictEqual(categories[0].buttons.length, 1);
+		assert.strictEqual(categories[0].buttons.length, 2);
 		assert.strictEqual(categories[0].buttons[0].title, 'Nuovo file');
 		assert.ok(categories.some((category) => category.id === 'workspace'));
 		assert.ok(categories.some((category) => category.id === 'github'));
 		const githubCategory = categories.find((category) => category.id === 'github');
 		assert.ok(githubCategory);
-		assert.strictEqual(githubCategory?.buttons.length, 3);
-		assert.deepStrictEqual(
-			githubCategory?.buttons.map((button) => button.terminalCommand),
-			['git fetch', 'git pull', 'git push'],
-		);
+		const githubCommands = githubCategory?.buttons
+			.map((button) => button.terminalCommand)
+			.filter((command): command is string => Boolean(command));
+		assert.deepStrictEqual(githubCommands, expectedGitCommands);
 		const aiCategory = categories.find((category) => category.id === 'ai');
+		assert.ok(aiCategory?.buttons.some((button) => button.title === 'Nuovo file'));
 		assert.ok(aiCategory?.buttons.some((button) => button.title === 'Crea struttura AI'));
 		const utilsCategory = categories.find((category) => category.id === 'utils');
 		assert.ok(utilsCategory?.buttons.some((button) => button.title === 'Reload Window'));
@@ -94,7 +99,15 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(categories[0].buttons[0].icon, '');
 	});
 
-	test('resolveCategoriesFromConfig aggiunge i default GitHub mancanti senza duplicati', () => {
+	test('resolveCategoriesFromConfig aggiunge i default GitHub mancanti senza duplicare terminalCommand', () => {
+		const expectedGitCommands = [
+			'git fetch',
+			'git pull',
+			'git push',
+			'git remote -v',
+			'git branch -r',
+			'git status -sb',
+		];
 		const categories = resolveCategoriesFromConfig(
 			[
 				{
@@ -117,13 +130,17 @@ suite('Extension Test Suite', () => {
 
 		const githubCategory = categories.find((category) => category.id === 'github');
 		assert.ok(githubCategory);
-		assert.strictEqual(githubCategory?.buttons.length, 3);
+		assert.strictEqual(githubCategory?.buttons.length, expectedGitCommands.length);
 		assert.strictEqual(
 			githubCategory?.buttons.filter((button) => button.terminalCommand === 'git fetch').length,
 			1,
 		);
-		assert.ok(githubCategory?.buttons.some((button) => button.terminalCommand === 'git pull'));
-		assert.ok(githubCategory?.buttons.some((button) => button.terminalCommand === 'git push'));
+		for (const gitCommand of expectedGitCommands) {
+			assert.ok(
+				githubCategory?.buttons.some((button) => button.terminalCommand === gitCommand),
+				`Comando mancante nel seed GitHub: ${gitCommand}`,
+			);
+		}
 	});
 
 	test('executeButtonCommand gestisce args array/object/assenti', async () => {

@@ -1,20 +1,35 @@
 # custom-command-sidebar
 
-Estensione VS Code che aggiunge una sidebar `Commands` con pulsanti personalizzabili per eseguire comandi VS Code (anche con argomenti JSON).
+Estensione VS Code che aggiunge una sidebar `Commands` con categorie e tile cliccabili per eseguire comandi VS Code o comandi terminale.
 
-## Cosa fa
+## Funzionalita principali
 
-- Mostra una view `Commands` nella Activity Bar.
-- Organizza i pulsanti in categorie (`Preferiti`, `Workspace`, `Github` di default).
-- Permette di aggiungere, modificare e rimuovere pulsanti dalla UI.
-- Salva la configurazione in `.vscode/settings.json` del workspace.
+- View `Commands` nella Activity Bar.
+- Layout a tile verticali 1-per-riga per tutte le categorie.
+- Azione globale `Aggiungi categoria`.
+- Menu categoria `⋮` con azioni:
+  - `Aggiungi pulsante`
+  - `Rinomina`
+  - `Elimina` (con conferma hard se la categoria non e vuota)
+- Validazione nomi case-insensitive:
+  - nome categoria univoco globale
+  - nome pulsante univoco dentro la categoria
+- Starter pack categorie:
+  - `AI`
+  - `Workspace`
+  - `Github`
+  - `Build/Test`
+  - `Utils`
+- Starter pack azioni:
+  - GitHub: `Fetch`, `Pull`, `Push`, `Remote`, `Branches Remote`, `Status`
+  - AI: `Crea struttura AI`
+  - Utils: `Reload Window`
 
-## Prerequisiti ambiente
+## Prerequisiti
 
-- `VS Code` (Engine estensione: `^1.107.0`)
-- `Node.js` 22 LTS consigliato
-- `npm` (incluso con Node.js)
-- `git` (opzionale, ma consigliato)
+- VS Code `^1.107.0`
+- Node.js 22 LTS consigliato
+- npm
 
 Verifica rapida:
 
@@ -23,92 +38,119 @@ node -v
 npm -v
 ```
 
-## Setup rapido (sviluppo locale)
+## Setup sviluppo
 
-1. Clona/apri la repository in VS Code.
-2. Installa le dipendenze:
+1. Apri la repository in VS Code.
+2. Installa dipendenze:
 
 ```powershell
 npm install
 ```
 
-3. Compila l'estensione:
+3. Compila:
 
 ```powershell
 npm run compile
 ```
 
-4. Avvia in debug:
-- Apri tab `Run and Debug`
-- Seleziona `Run Extension`
-- Premi `F5`
-- Si aprira' una nuova finestra `Extension Development Host` con l'estensione caricata
+4. Avvia Extension Development Host:
+   - `Run and Debug`
+   - configurazione `Run Extension`
+   - `F5`
 
-## Comandi utili
+## Script utili
 
-- Build completa: `npm run compile`
-- Watch (TS + esbuild): `npm run watch`
-- Typecheck: `npm run check-types`
-- Lint: `npm run lint`
-- Test estensione: `npm test`
-- Package produzione: `npm run package`
+- `npm run compile`: typecheck + lint + bundle
+- `npm run watch`: watch completo (tsc + esbuild)
+- `npm run check-types`: typecheck
+- `npm run lint`: lint sorgenti
+- `npm test`: test extension host
+- `npm run package`: bundle produzione
 
-## Configurazione estensione
+## Configurazione
 
-Impostazione principale:
+Setting principale:
 
-- `myCommandSidebar.categories`: array di categorie con pulsanti.
+- `myCommandSidebar.categories`
 
-Esempio da inserire in `.vscode/settings.json`:
+Esempio:
 
 ```json
 {
   "myCommandSidebar.categories": [
     {
-      "id": "favorites",
-      "label": "Preferiti",
+      "id": "ai",
+      "label": "AI",
       "buttons": [
         {
-          "label": "Nuovo file",
-          "command": "workbench.action.files.newUntitledFile",
-          "icon": "new-file"
-        },
-        {
-          "label": "Apri terminale",
+          "label": "Crea struttura AI",
+          "title": "Crea struttura AI",
+          "description": "Crea AI/ e i file base del kit",
+          "icon": "folder-library",
           "command": "workbench.action.terminal.new",
-          "icon": "terminal"
+          "terminalCommand": "powershell -ExecutionPolicy Bypass -File \"<path-script>\" -WorkspacePath \"<workspace>\""
         }
       ]
     },
     {
-      "id": "workspace",
-      "label": "Workspace",
-      "buttons": []
+      "id": "github",
+      "label": "Github",
+      "buttons": [
+        {
+          "label": "Git Fetch",
+          "title": "Fetch",
+          "description": "Aggiorna refs dal remoto",
+          "icon": "arrow-down",
+          "command": "workbench.action.terminal.new",
+          "terminalCommand": "git fetch"
+        }
+      ]
     }
   ]
 }
 ```
 
-Schema pulsante:
+Campi supportati per bottone:
 
-- `label` (string, obbligatorio): testo del pulsante.
-- `command` (string, obbligatorio): command id VS Code da eseguire.
-- `icon` (string, opzionale): nome Codicon senza prefisso `codicon-`.
-- `args` (qualunque JSON, opzionale): argomenti passati al comando.
+- `label` (obbligatorio)
+- `command` (obbligatorio)
+- `title` (opzionale, fallback su `label`)
+- `description` (opzionale)
+- `icon` (opzionale, Codicon senza prefisso `codicon-`)
+- `args` (opzionale, JSON qualsiasi)
+- `terminalCommand` (opzionale, se presente viene eseguito nel terminale dedicato)
+
+## Bootstrap AI da pulsante
+
+Il pulsante `Crea struttura AI` usa lo script:
+
+- `scripts/create-ai-structure.ps1`
+
+Sorgente template:
+
+- `AI_structure/`
+
+Comportamento:
+
+- crea `AI/` nel workspace target copiando il template
+- se `AI/` esiste gia, la rinomina in `AI_new`, `AI_new_2`, `AI_new_3`, ...
+- su sistemi non Windows mostra messaggio di funzione non disponibile
 
 ## Note operative
 
-- Il salvataggio richiede una cartella workspace aperta (non funziona in finestra vuota).
-- Se in passato usavi la chiave legacy `myCommandSidebar.buttons`, viene migrata automaticamente in `Preferiti`.
+- Per salvare configurazione serve una cartella workspace aperta.
+- La chiave legacy `myCommandSidebar.buttons` viene migrata automaticamente nella categoria `AI`.
+- I bottoni con `terminalCommand` usano/riusano un terminale VS Code chiamato `Custom Button Manager`.
 
 ## Troubleshooting
 
-- La sidebar non appare:
-  - verifica di aver avviato la finestra `Extension Development Host` con `F5`
-  - controlla che non ci siano errori nella `Debug Console`
-- I pulsanti non salvano:
-  - assicurati di avere un workspace folder aperto
-  - verifica i permessi di scrittura su `.vscode/settings.json`
-- Un comando fallisce:
-  - controlla che il `command` sia un command id valido
-  - se usi `args`, assicurati che sia JSON valido
+- Sidebar non visibile:
+  - avvia `Run Extension` con `F5`
+  - controlla la Debug Console
+- Salvataggio pulsanti non riuscito:
+  - apri una workspace folder (non finestra vuota)
+  - verifica permessi su `.vscode/settings.json`
+- Script AI non parte:
+  - verifica presenza cartella `AI_structure/` nel root repo dell'estensione
+  - verifica esistenza file `scripts/create-ai-structure.ps1`
+  - verifica che l'host sia Windows
