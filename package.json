@@ -3,7 +3,7 @@
   "publisher": "JZanella",
   "displayName": "Custom Command Sidebar",
   "description": "Add buttons to run different custom commands or routines",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "icon": "media/icon.png",
   "engines": {

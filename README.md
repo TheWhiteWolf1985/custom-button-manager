@@ -7,7 +7,7 @@ Estensione VS Code che aggiunge una sidebar `Commands` con categorie e tile clic
 - View `Commands` nella Activity Bar.
 - Layout a tile verticali 1-per-riga per tutte le categorie.
 - Azione globale `Aggiungi categoria`.
-- Menu categoria `⋮` con azioni:
+- Menu categoria `...` con azioni:
   - `Aggiungi pulsante`
   - `Rinomina`
   - `Elimina` (con conferma hard se la categoria non e vuota)
@@ -88,7 +88,7 @@ Esempio:
           "description": "Crea AI/ e i file base del kit",
           "icon": "folder-library",
           "command": "workbench.action.terminal.new",
-          "terminalCommand": "powershell -ExecutionPolicy Bypass -File \"<path-script>\" -WorkspacePath \"<workspace>\""
+          "terminalCommand": "powershell -ExecutionPolicy Bypass -File \"<path-script>\""
         }
       ]
     },

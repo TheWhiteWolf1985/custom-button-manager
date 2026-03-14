@@ -6,4 +6,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
-- Initial release
+## [1.0.1]
+
+- Packaging refresh for Marketplace upload
+- Added AI bootstrap first-run prompt to the bundled template
